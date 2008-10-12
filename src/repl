@@ -1,0 +1,11 @@
+#!/bin/bash
+BREAK_CHARS="(){}[],^%$#@\"\";:''|\\"
+CLOJURE_DIR=.
+CLOJURE_JAR=$CLOJURE_DIR/target/clojure-lang-1.0-SNAPSHOT.jar
+if [ -z "$1" ]; then
+    rlwrap --remember -c -b $BREAK_CHARS -f ~/.clj_completions \
+        java -cp $CLOJURE_JAR clojure.lang.Repl
+else
+    java -cp $CLOJURE_JAR clojure.lang.Script $1
+fi
+
