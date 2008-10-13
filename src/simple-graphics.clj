@@ -15,10 +15,14 @@
 
 (defn render [g]
   (let [img (new BufferedImage X Y (. BufferedImage TYPE_INT_ARGB))
-        bg (. img (getGraphics))]
+        bg (. img getGraphics)]
     (doto bg
-      (setColor (. Color white))
-      (fillRect 0 0 (. img (getWidth)) (. img (getHeight))))))
+      (setColor (. Color green))
+      (fillRect 0 0 (. img getWidth) (. img getHeight)))
+
+    (. g (drawImage img 0 0 nil))
+    (. bg (dispose))))
+
 
 (def panel (doto (proxy [JPanel] [] (paint [g] (render g)))
              (setBackground (. Color white))
@@ -26,5 +30,6 @@
 
 (def frame
   (doto (new JFrame "xwe")
-    (add panel) (pack) (show)))
-
+    (add panel) (pack) (show)
+    (addWindowListener
+      (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))))
