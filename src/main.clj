@@ -10,7 +10,7 @@
   '(java.awt.font TextLayout FontRenderContext)
   '(javax.swing JFrame JPanel))
 
-(def N 10)
+(def N 15)
 (def board (hash-map))
 
 (def board-iter (for [i (range N) j (range N)] [i j]))
@@ -54,17 +54,18 @@
 
   '(java.awt.font TextLayout FontRenderContext)
 
-(def X 800)
-(def Y 800)
+(def scale 40)
+(def height 800)
+(def width 800)
+(def n (* N scale))
 
 (defn render [g]
-  (let [img (new BufferedImage X Y (. BufferedImage TYPE_INT_ARGB))
+  (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
         bg (. img getGraphics)]
     (. bg (setColor (. Color black)))
-    (let [n 600]
-      (doseq i (range 0 (+ n 40) 40)
-        (. bg drawLine 0 i n i)
-        (. bg drawLine i 0 i n)))
+    (doseq i (range 0 (+ n scale) scale)
+      (. bg drawLine 0 i n i)
+      (. bg drawLine i 0 i n))
 
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
@@ -72,10 +73,14 @@
 
 (def panel (doto (proxy [JPanel] [] (paint [g] (render g)))
              (setBackground (. Color white))
-             (setPreferredSize (new Dimension X Y))))
+             (setPreferredSize (new Dimension width height))))
 
 (def frame
   (doto (new JFrame "xwe")
-    (add panel) (pack) (show)
+    (add panel) 
+    (pack)
     (addWindowListener
       (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))))
+
+(defn main [args]
+  (. frame show))
