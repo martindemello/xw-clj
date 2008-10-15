@@ -13,13 +13,17 @@
 (def N 15)
 (def board (hash-map))
 
-(def board-iter (for [i (range N) j (range N)] [i j]))
+(def board-iter (for [j (range N) i (range N)] [i j]))
 
 (defn letter [i j] ((board [i j]) 0))
 
 (defn number [i j] ((board [i j]) 1))
 
 (defn black? [i j] (= (letter i j) :black))
+
+(defn blank? [i j] (= (letter i j) :empty))
+
+(defn numbered? [i j] (not (= (number i j) nil)))
 
 (defn set-letter [i j l]
   (def board (assoc board [i j] [l (number i j)])))
@@ -54,8 +58,9 @@
   (def board (assoc board [i j] [:empty nil])))
 
 (def board (assoc board [0 9] [:black nil]))
+(set-letter 0 1 "A")
+(renumber)
 
-(set-letter 1 1 "A")
 ; Graphics
 
 (def scale 40)
@@ -65,6 +70,20 @@
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
+
+(defn draw-letter [bg x y l]
+  (let [[i j] (topleft x y)]
+    (doto bg
+      (setColor (. Color black))
+      (setFont (new Font "Serif" (. Font PLAIN) 24))
+      (drawString l (+ i 15) (+ j (- scale 10))))))
+
+(defn draw-number [bg x y n]
+  (let [[i j] (topleft x y)]
+    (doto bg
+      (setColor (. Color black))
+      (setFont (new Font "Serif" (. Font PLAIN) 12))
+      (drawString (pr-str n) (+ i 2) (+ j 12)))))
 
 (defn fill-square [bg x y color]
   (let [[i j] (topleft x y)]
@@ -76,30 +95,16 @@
   (fill-square bg x y (. Color black)))
 
 (defn white-square [bg x y]
-  (fill-square bg x y (. Color white)))
-
-(defn draw-letter [bg x y l]
-  (let [[i j] (topleft x y)]
-    (white-square bg x y)
-    (doto bg
-      (setColor (. Color black))
-      (setFont (new Font "Serif" (. Font PLAIN) 24))
-      (drawString l (+ i 15) (+ j (- scale 10))))))
-
-(defn draw-letter [bg x y l]
-  (let [[i j] (topleft x y)]
-    (white-square bg x y)
-    (doto bg
-      (setColor (. Color black))
-      (setFont (new Font "Serif" (. Font PLAIN) 24))
-      (drawString l (+ i 15) (+ j (- scale 10))))))
+  (fill-square bg x y (. Color white))
+  (when-not (blank? x y)
+    (draw-letter bg x y (letter x y)))
+  (when (numbered? x y)
+    (draw-number bg x y (number x y))))
 
 (defn square [bg x y]
-  (let [l (letter x y)]
-    (cond
-      (= l :black) (black-square bg x y)
-      (= l :empty) (white-square bg x y)
-      (draw-letter bg x y l))))
+  (if (black? x y) 
+    (black-square bg x y)
+    (white-square bg x y)))
       
 (defn render [g]
   (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
@@ -131,4 +136,3 @@
 
 (defn main [args]
   (. frame show))
-
