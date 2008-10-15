@@ -10,6 +10,8 @@
 	'(java.awt.event MouseMotionListener MouseListener MouseEvent))
 
 
+; http://paste.lisp.org/display/62316
+
 (def frame-env)
 (def width)
 (def height)
@@ -499,8 +501,9 @@
 	  (text-alignment 'CENTER 'CENTER)
 	  (background 0) 
 	  (ellipse mouseX (+ mouseY 5) 100 50)
-	  (text (vvar mouseX) mouseX mouseY))
+	  (text "hello" mouseX mouseY))
 
+  (comment
  (on-click fr (stroke 255)
 	   (smooth true)
 	   (line-width 3)
@@ -525,5 +528,5 @@
 		 (text "To here" mouseX mouseY)
 		 (ellipse (first foo) (second foo) 70 30)
 		 (text "From here" (first foo) (second foo))
-		 (fill nil))))
+		 (fill nil)))))
 

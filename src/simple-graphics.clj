@@ -16,9 +16,11 @@
 (defn render [g]
   (let [img (new BufferedImage X Y (. BufferedImage TYPE_INT_ARGB))
         bg (. img getGraphics)]
-    (doto bg
-      (setColor (. Color green))
-      (fillRect 0 0 (. img getWidth) (. img getHeight)))
+    (. bg (setColor (. Color black)))
+    (let [n 600]
+      (doseq i (range 0 (+ n 40) 40)
+        (. bg drawLine 0 i n i)
+        (. bg drawLine i 0 i n)))
 
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
