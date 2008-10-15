@@ -59,6 +59,15 @@
 (def width 800)
 (def n (* N scale))
 
+(defn topleft [x y]
+  [(* x scale) (* y scale)])
+
+(defn square [bg x y color]
+  (let [[i j] (topleft x y)]
+    (doto bg
+      (setColor color)
+      (fillRect (+ i 1) (+ j 1) (- scale 1) (- scale 1)))))
+
 (defn render [g]
   (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
         bg (. img getGraphics)]
@@ -66,6 +75,9 @@
     (doseq i (range 0 (+ n scale) scale)
       (. bg drawLine 0 i n i)
       (. bg drawLine i 0 i n))
+
+    (doseq [i j] board-iter
+      (square bg i j (. Color blue)))
 
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
@@ -79,6 +91,7 @@
   (doto (new JFrame "xwe")
     (add panel) 
     (pack)
+    (show)
     (addWindowListener
       (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))))
 
