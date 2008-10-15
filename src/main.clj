@@ -67,6 +67,8 @@
 (def height 800)
 (def width 800)
 (def n (* N scale))
+(def current-x 0)
+(def current-y 0)
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
@@ -90,6 +92,15 @@
     (doto bg
       (setColor color)
       (fillRect (+ i 1) (+ j 1) (- scale 1) (- scale 1)))))
+
+(defn border-square [bg x y color]
+  (let [[i j] (topleft x y)]
+    (doto bg
+      (setColor color)
+      (drawRect (+ i 1) (+ j 1) (- scale 1) (- scale 1)))))
+
+(defn draw-cursor [bg x y]
+  (border-square bg x y (. Color red)))
 
 (defn black-square [bg x y]
   (fill-square bg x y (. Color black)))
@@ -116,6 +127,8 @@
 
     (doseq [i j] board-iter
       (square bg i j))
+
+    (draw-cursor bg current-x current-y)
 
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
