@@ -30,23 +30,6 @@
 (defn set-number [i j n]
   (def board (assoc board [i j] [(letter i j) n])))
 
-; cursor movement
-(def current-x 0)
-(def current-y 0)
-(def current-dir :across)
-(defn inc-pos [i] (rem (+ i 1) N))
-(defn dec-pos [i] (if (= i 0) (- N 1) (- i 1)))
-(defn move-down  [] (def current-y (inc-pos current-y)))
-(defn move-up    [] (def current-y (dec-pos current-y)))
-(defn move-right [] (def current-x (inc-pos current-x)))
-(defn move-left  [] (def current-x (dec-pos current-x)))
-
-; do something in current square
-(defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
-(defn place-letter [c] (set-letter current-x current-y c))
-(defn place-black []
-  (doseq [i j] (symm current-x current-y) (set-letter i j :black)))
-
 ; numbering
 (defn start-across? [i j] 
   (and 
@@ -68,6 +51,36 @@
         (set-number i j n)
         (def n (+ n 1)))
       (set-number i j nil))))
+
+; cursor movement
+(def current-x 0)
+(def current-y 0)
+(def current-dir :across)
+(defn across? [] (= current-dir :across))
+(defn inc-pos [i] (rem (+ i 1) N))
+(defn dec-pos [i] (if (= i 0) (- N 1) (- i 1)))
+(defn move-down  [] (def current-y (inc-pos current-y)))
+(defn move-up    [] (def current-y (dec-pos current-y)))
+(defn move-right [] (def current-x (inc-pos current-x)))
+(defn move-left  [] (def current-x (dec-pos current-x)))
+(defn move-forward [] (if (across?) (move-right) (move-down)))
+(defn move-back [] (if (across?) (move-left) (move-up)))
+(defn flip-dir [] 
+  (if (across?) (def current-dir :down) (def current-dir :across)))
+
+; do something in current square
+(defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
+
+(defn place-letter [c]
+  (when (black? current-x current-y)
+    (doseq [i j] (symm current-x current-y) (set-letter i j :empty))
+    (renumber))
+  (set-letter current-x current-y c))
+
+(defn place-black []
+  (doseq [i j] (symm current-x current-y) (set-letter i j :black))
+  (renumber))
+
 
 ; Populate the board with empty cells
 (doseq [i j] board-iter
@@ -118,7 +131,7 @@
 (defn border-square [bg x y color]
   (in-square [i j] bg x y
              (setColor color)
-             (drawRect (+ i 1) (+ j 1) (- scale 1) (- scale 1))))
+             (drawRect (+ i 1) (+ j 1) (- scale 2) (- scale 2))))
 
 (defn draw-cursor [bg x y]
   (border-square bg x y (. Color red)))
@@ -183,14 +196,16 @@
             [e] 
             (let [c (char-of e)]
               (cond
-                (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-right))
-                (= c "Space") (place-black)
-                (= c "Backspace") (do (move-left) (place-letter :empty))
+                (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-forward))
+                (= c "Space") (do (place-black) (move-forward))
+                (= c "Backspace") (do (move-back) (place-letter :empty))
                 (= c "Delete") (place-letter :empty)
                 (= c "Down")  (move-down)
                 (= c "Up")    (move-up)
                 (= c "Right") (move-right)
                 (= c "Left")  (move-left)
+                (= c "Equals") (flip-dir) 
+
                 ) 
               (. output setText (.concat (. output getText) c))
               (. panel repaint)
