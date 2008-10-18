@@ -5,26 +5,23 @@
   '(java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
              GridLayout BorderLayout FlowLayout)
   '(java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
-                 Line2D PathIterator Point2D) 
+                  Line2D PathIterator Point2D) 
   '(java.awt.image BufferedImage)
   '(java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
   '(java.awt.font TextLayout FontRenderContext)
   '(javax.swing JFrame JPanel JTextField))
 
 (def N 15)
-(def M (- N 1))
+(def M (- N 1)) ; since the squares are numbered from 0 .. n-1
 (def board (hash-map))
 
 (def board-iter (for [j (range N) i (range N)] [i j]))
 
+; accessors
 (defn letter [i j] ((board [i j]) 0))
-
 (defn number [i j] ((board [i j]) 1))
-
 (defn black? [i j] (= (letter i j) :black))
-
 (defn blank? [i j] (= (letter i j) :empty))
-
 (defn numbered? [i j] (not (= (number i j) nil)))
 
 (defn set-letter [i j l]
@@ -32,6 +29,23 @@
 
 (defn set-number [i j n]
   (def board (assoc board [i j] [(letter i j) n])))
+
+; cursor movement
+(def current-x 0)
+(def current-y 0)
+(def current-dir :across)
+(defn inc-pos [i] (rem (+ i 1) N))
+(defn dec-pos [i] (if (= i 0) (- N 1) (- i 1)))
+(defn move-down  [] (def current-y (inc-pos current-y)))
+(defn move-up    [] (def current-y (dec-pos current-y)))
+(defn move-right [] (def current-x (inc-pos current-x)))
+(defn move-left  [] (def current-x (dec-pos current-x)))
+
+; do something in current square
+(defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
+(defn place-letter [c] (set-letter current-x current-y c))
+(defn place-black []
+  (doseq [i j] (symm current-x current-y) (set-letter i j :black)))
 
 ; numbering
 (defn start-across? [i j] 
@@ -69,8 +83,6 @@
 (def height 620)
 (def width 800)
 (def n (* N scale))
-(def current-x 0)
-(def current-y 0)
 (def letter-font (new Font "Serif" (. Font PLAIN) 24))
 (def number-font (new Font "Serif" (. Font PLAIN) 12))
 (def text-color (. Color black))
@@ -83,14 +95,14 @@
 
 (defmacro in-square [[i j] bg x y & body]
   `(let [[~i ~j] (topleft ~x ~y)]
-    (doto ~bg
-      ~@body)))
+     (doto ~bg
+       ~@body)))
 
 (defn draw-letter [bg x y l]
   (in-square [i j] bg x y
-      (setColor text-color)
-      (setFont letter-font)
-      (drawString l (+ i 15) (+ j (- scale 10)))))
+             (setColor text-color)
+             (setFont letter-font)
+             (drawString l (+ i 15) (+ j (- scale 10)))))
 
 (defn draw-number [bg x y n]
   (in-square [i j] bg x y
@@ -125,7 +137,7 @@
   (if (black? x y) 
     (black-square bg x y)
     (white-square bg x y)))
-      
+
 (defn render [g]
   (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
         bg (. img getGraphics)]
@@ -148,23 +160,9 @@
              (setPreferredSize (new Dimension width height))))
 
 (def output (doto (new JTextField)
-              (setColumns 80)
-              (setText "taliban!")))
+              (setColumns 80)))
 
 (defn char-of [e] (. KeyEvent getKeyText (. e getKeyCode)))
-
-(defn inc-pos [i] (rem (+ i 1) N))
-(defn dec-pos [i] (if (= i 0) (- N 1) (- i 1)))
-(defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
-
-(defn place-letter [c] (set-letter current-x current-y c))
-(defn place-black []
-  (doseq [i j] (symm current-x current-y) (set-letter i j :black)))
-
-(defn move-down  [] (def current-y (inc-pos current-y)))
-(defn move-up    [] (def current-y (dec-pos current-y)))
-(defn move-right [] (def current-x (inc-pos current-x)))
-(defn move-left  [] (def current-x (dec-pos current-x)))
 
 (def frame
   (let [j (new JFrame "xwe")
@@ -197,7 +195,6 @@
               (. output setText (.concat (. output getText) c))
               (. panel repaint)
               )))))))
-  
 
 (defn main [args]
   (. frame show))
