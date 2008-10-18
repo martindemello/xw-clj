@@ -2,13 +2,14 @@
 (clojure/refer 'clojure)
 
 (import 
-  '(java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints)
+  '(java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
+             GridLayout BorderLayout FlowLayout)
   '(java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
                  Line2D PathIterator Point2D) 
   '(java.awt.image BufferedImage)
-  '(java.awt.event WindowAdapter WindowEvent)
+  '(java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
   '(java.awt.font TextLayout FontRenderContext)
-  '(javax.swing JFrame JPanel))
+  '(javax.swing JFrame JPanel JTextField))
 
 (def N 15)
 (def board (hash-map))
@@ -64,40 +65,47 @@
 ; Graphics
 
 (def scale 40)
-(def height 800)
+(def height 620)
 (def width 800)
 (def n (* N scale))
 (def current-x 0)
 (def current-y 0)
+(def letter-font (new Font "Serif" (. Font PLAIN) 24))
+(def number-font (new Font "Serif" (. Font PLAIN) 12))
+(def text-color (. Color black))
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
 
+(defn inner-square [i j]
+  (+ i 1) (+ j 1) (- scale 1) (- scale 1))
+
+(defmacro in-square [[i j] bg x y & body]
+  `(let [[~i ~j] (topleft ~x ~y)]
+    (doto ~bg
+      ~@body)))
+
 (defn draw-letter [bg x y l]
-  (let [[i j] (topleft x y)]
-    (doto bg
-      (setColor (. Color black))
-      (setFont (new Font "Serif" (. Font PLAIN) 24))
-      (drawString l (+ i 15) (+ j (- scale 10))))))
+  (in-square [i j] bg x y
+      (setColor text-color)
+      (setFont letter-font)
+      (drawString l (+ i 15) (+ j (- scale 10)))))
 
 (defn draw-number [bg x y n]
-  (let [[i j] (topleft x y)]
-    (doto bg
-      (setColor (. Color black))
-      (setFont (new Font "Serif" (. Font PLAIN) 12))
-      (drawString (pr-str n) (+ i 2) (+ j 12)))))
+  (in-square [i j] bg x y
+             (setColor text-color)
+             (setFont number-font)
+             (drawString (pr-str n) (+ i 2) (+ j 12))))
 
 (defn fill-square [bg x y color]
-  (let [[i j] (topleft x y)]
-    (doto bg
-      (setColor color)
-      (fillRect (+ i 1) (+ j 1) (- scale 1) (- scale 1)))))
+  (in-square [i j] bg x y
+             (setColor color)
+             (fillRect (+ i 1) (+ j 1) (- scale 1) (- scale 1))))
 
 (defn border-square [bg x y color]
-  (let [[i j] (topleft x y)]
-    (doto bg
-      (setColor color)
-      (drawRect (+ i 1) (+ j 1) (- scale 1) (- scale 1)))))
+  (in-square [i j] bg x y
+             (setColor color)
+             (drawRect (+ i 1) (+ j 1) (- scale 1) (- scale 1))))
 
 (defn draw-cursor [bg x y]
   (border-square bg x y (. Color red)))
@@ -138,13 +146,35 @@
              (setBackground (. Color white))
              (setPreferredSize (new Dimension width height))))
 
+(def output (doto (new JTextField)
+              (setColumns 80)
+              (setText "taliban!")))
+
+(defn char-of [e] (. KeyEvent getKeyText (. e getKeyCode)))
+
 (def frame
-  (doto (new JFrame "xwe")
-    (add panel) 
-    (pack)
-    (show)
-    (addWindowListener
-      (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))))
+  (let [j (new JFrame "xwe")
+        p (. j getContentPane)]
+    (doto p
+      (setLayout (new FlowLayout))
+      (add panel)
+      (add output))
+    (doto j
+      (setSize 900 750)
+      (show)
+      (addWindowListener
+        (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
+      (setFocusable 'true)
+      (addKeyListener
+        (proxy [KeyAdapter] []
+          (keyPressed 
+            [e] 
+            (let [c (char-of e)]
+              (. output setText (char-of e))
+              (set-letter current-x current-y c)
+              (def current-x (rem (+ 1 current-x) N))
+              (. panel repaint)
+              )))))))
   
 
 (defn main [args]
