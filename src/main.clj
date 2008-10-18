@@ -12,6 +12,7 @@
   '(javax.swing JFrame JPanel JTextField))
 
 (def N 15)
+(def M (- N 1))
 (def board (hash-map))
 
 (def board-iter (for [j (range N) i (range N)] [i j]))
@@ -152,6 +153,19 @@
 
 (defn char-of [e] (. KeyEvent getKeyText (. e getKeyCode)))
 
+(defn inc-pos [i] (rem (+ i 1) N))
+(defn dec-pos [i] (if (= i 0) (- N 1) (- i 1)))
+(defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
+
+(defn place-letter [c] (set-letter current-x current-y c))
+(defn place-black []
+  (doseq [i j] (symm current-x current-y) (set-letter i j :black)))
+
+(defn move-down  [] (def current-y (inc-pos current-y)))
+(defn move-up    [] (def current-y (dec-pos current-y)))
+(defn move-right [] (def current-x (inc-pos current-x)))
+(defn move-left  [] (def current-x (dec-pos current-x)))
+
 (def frame
   (let [j (new JFrame "xwe")
         p (. j getContentPane)]
@@ -170,9 +184,17 @@
           (keyPressed 
             [e] 
             (let [c (char-of e)]
-              (. output setText (char-of e))
-              (set-letter current-x current-y c)
-              (def current-x (rem (+ 1 current-x) N))
+              (cond
+                (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-right))
+                (= c "Space") (place-black)
+                (= c "Backspace") (do (move-left) (place-letter :empty))
+                (= c "Delete") (place-letter :empty)
+                (= c "Down")  (move-down)
+                (= c "Up")    (move-up)
+                (= c "Right") (move-right)
+                (= c "Left")  (move-left)
+                ) 
+              (. output setText (.concat (. output getText) c))
               (. panel repaint)
               )))))))
   
