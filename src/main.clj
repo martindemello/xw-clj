@@ -93,8 +93,8 @@
 (def letter-font (new Font "Serif" (. Font PLAIN) 24))
 (def number-font (new Font "Serif" (. Font PLAIN) 12))
 (def text-color (. Color black))
-(def ared (new Color 255 0 0 128))
-(def ablu (new Color 0 0 255 128))
+(def ared  (new Color 255 0 0 128))
+(def ablue (new Color 0 0 255 128))
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
@@ -146,19 +146,17 @@
 (defn translate [poly x0 y0]
   (map #(add2 [x0 y0] %) poly))
 
-(defn arrow-ac [bg x0 y0]
-  (let [po (new Polygon)
-        arr (translate arrow x0 y0)]
-    (doseq [i j] arr (. po addPoint i j))
-    (. bg setColor ared)
+(defn add-poly [bg poly col]
+  (let [po (new Polygon)]
+    (doseq [i j] poly (. po addPoint i j))
+    (. bg setColor col)
     (. bg fillPolygon po)))
 
+(defn arrow-ac [bg x0 y0]
+  (add-poly bg (translate arrow x0 y0) ared))
+
 (defn arrow-dn [bg x0 y0]
-  (let [po (new Polygon)
-        arr (translate (map rot-90 arrow) (+ x0 scale) y0)]
-    (doseq [i j] arr (. po addPoint i j))
-    (. bg setColor ablu)
-    (. bg fillPolygon po)))
+  (add-poly bg (translate (map rot-90 arrow) (+ x0 scale) y0) ablue))
 
 (defn draw-cursor [bg x y]
   (let [[i j] (topleft x y)]
