@@ -3,7 +3,7 @@
 
 (import 
   '(java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
-             GridLayout BorderLayout FlowLayout)
+             GridLayout BorderLayout FlowLayout Polygon)
   '(java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
                   Line2D PathIterator Point2D) 
   '(java.awt.image BufferedImage)
@@ -35,13 +35,13 @@
   (and 
     (not (black? i j))
     (or (= i 0) (black? (- i 1) j))
-    (and (< i (- N 1)) (not (black? (+ i 1) j)))))
+    (and (< i M) (not (black? (+ i 1) j)))))
 
 (defn start-down? [i j] 
   (and 
     (not (black? i j))
     (or (= j 0) (black? i (- j 1)))
-    (and (< j (- N 1)) (not (black? i (+ j 1))))))
+    (and (< j M) (not (black? i (+ j 1))))))
 
 (defn renumber []
   (def n 1)
@@ -65,29 +65,23 @@
 (defn move-left  [] (def current-x (dec-pos current-x)))
 (defn move-forward [] (if (across?) (move-right) (move-down)))
 (defn move-back [] (if (across?) (move-left) (move-up)))
-(defn flip-dir [] 
-  (if (across?) (def current-dir :down) (def current-dir :across)))
+(defn flip-dir [] (def current-dir (if (across?) :down :across)))
 
 ; do something in current square
 (defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
 
-(defn place-letter [c]
-  (when (black? current-x current-y)
-    (doseq [i j] (symm current-x current-y) (set-letter i j :empty))
-    (renumber))
-  (set-letter current-x current-y c))
-
-(defn place-black []
-  (doseq [i j] (symm current-x current-y) (set-letter i j :black))
+(defn place-symm [blk]
+  (doseq [i j] (symm current-x current-y) (set-letter i j blk))
   (renumber))
 
+(defn place-letter [c]
+  (when (black? current-x current-y) (place-symm :empty))
+  (set-letter current-x current-y c))
 
 ; Populate the board with empty cells
 (doseq [i j] board-iter
   (def board (assoc board [i j] [:empty nil])))
 
-(def board (assoc board [0 9] [:black nil]))
-(set-letter 0 1 "A")
 (renumber)
 
 ; Graphics
@@ -99,6 +93,8 @@
 (def letter-font (new Font "Serif" (. Font PLAIN) 24))
 (def number-font (new Font "Serif" (. Font PLAIN) 12))
 (def text-color (. Color black))
+(def ared (new Color 255 0 0 128))
+(def ablu (new Color 0 0 255 128))
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
@@ -133,8 +129,41 @@
              (setColor color)
              (drawRect (+ i 1) (+ j 1) (- scale 2) (- scale 2))))
 
+(defn add2 [u v] [(+ (u 0) (v 0)) (+ (u 1) (v 1))])
+(defn rot-90 ([[i j]] [(- j) i]))
+
+(def arrow
+  (let [x0 0
+        y0 0
+        x1 (/ scale 2)
+        x2 scale
+        y1 (/ scale 3)
+        y2 (/ scale 2)
+        y3 (/ (* scale 2) 3)
+        y4 scale]
+      [[x1 y0] [x2 y2] [x1 y4] [x1 y3] [x0 y3] [x0 y1] [x1 y1] [x1 y0]]))
+
+(defn translate [poly x0 y0]
+  (map #(add2 [x0 y0] %) poly))
+
+(defn arrow-ac [bg x0 y0]
+  (let [po (new Polygon)
+        arr (translate arrow x0 y0)]
+    (doseq [i j] arr (. po addPoint i j))
+    (. bg setColor ared)
+    (. bg fillPolygon po)))
+
+(defn arrow-dn [bg x0 y0]
+  (let [po (new Polygon)
+        arr (translate (map rot-90 arrow) (+ x0 scale) y0)]
+    (doseq [i j] arr (. po addPoint i j))
+    (. bg setColor ablu)
+    (. bg fillPolygon po)))
+
 (defn draw-cursor [bg x y]
-  (border-square bg x y (. Color red)))
+  (let [[i j] (topleft x y)]
+    ((if (across?) arrow-ac arrow-dn) bg i j)))
+  ;(border-square bg x y (if (across?) (. Color red) (. Color blue))))
 
 (defn black-square [bg x y]
   (fill-square bg x y (. Color black)))
@@ -167,16 +196,34 @@
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
 
+(def panel 
+  (doto (proxy [JPanel] [] (paint [g] (render g)))
+    (setBackground (. Color white))
+    (setPreferredSize (new Dimension width height))))
 
-(def panel (doto (proxy [JPanel] [] (paint [g] (render g)))
-             (setBackground (. Color white))
-             (setPreferredSize (new Dimension width height))))
-
-(def output (doto (new JTextField)
-              (setColumns 80)))
+(def output (doto (new JTextField) (setColumns 80)))
 
 (defn char-of [e] (. KeyEvent getKeyText (. e getKeyCode)))
 
+(def key-listener
+  (proxy [KeyAdapter] []
+    (keyPressed 
+      [e] 
+      (let [c (char-of e)]
+        (cond
+          (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-forward))
+          (= c "Space") (do (place-symm :black) (move-forward))
+          (= c "Backspace") (do (move-back) (place-letter :empty))
+          (= c "Delete") (place-letter :empty)
+          (= c "Down")  (move-down)
+          (= c "Up")    (move-up)
+          (= c "Right") (move-right)
+          (= c "Left")  (move-left)
+          (= c "Enter") (flip-dir) 
+          ) 
+        (. output setText (.concat (. output getText) c))
+        (. panel repaint)))))
+  
 (def frame
   (let [j (new JFrame "xwe")
         p (. j getContentPane)]
@@ -190,26 +237,7 @@
       (addWindowListener
         (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
       (setFocusable 'true)
-      (addKeyListener
-        (proxy [KeyAdapter] []
-          (keyPressed 
-            [e] 
-            (let [c (char-of e)]
-              (cond
-                (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-forward))
-                (= c "Space") (do (place-black) (move-forward))
-                (= c "Backspace") (do (move-back) (place-letter :empty))
-                (= c "Delete") (place-letter :empty)
-                (= c "Down")  (move-down)
-                (= c "Up")    (move-up)
-                (= c "Right") (move-right)
-                (= c "Left")  (move-left)
-                (= c "Equals") (flip-dir) 
-
-                ) 
-              (. output setText (.concat (. output getText) c))
-              (. panel repaint)
-              )))))))
+      (addKeyListener key-listener))))
 
 (defn main [args]
   (. frame show))
