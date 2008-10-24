@@ -97,8 +97,14 @@
 (def ablue  (new Color 0 0 255 192))
 (def agreen (new Color 0 128 0 64))
 
+(defn add2 [u v] [(+ (u 0) (v 0)) (+ (u 1) (v 1))])
+(defn rot-90 ([[i j]] [(- j) i]))
+
 (defn topleft [x y]
   [(* x scale) (* y scale)])
+
+(defn topleft-inner [x y]
+  (add2 (topleft x y) [1 1]))
 
 (defn inner-square [i j]
   (+ i 1) (+ j 1) (- scale 1) (- scale 1))
@@ -130,14 +136,11 @@
              (setColor color)
              (drawRect (+ i 1) (+ j 1) (- scale 2) (- scale 2))))
 
-(defn add2 [u v] [(+ (u 0) (v 0)) (+ (u 1) (v 1))])
-(defn rot-90 ([[i j]] [(- j) i]))
-
 (def arrow
-  (let [h (/ scale 2) ; half, full, one-third, two-thirds
-        f scale
-        o (/ scale 3)
-        t (/ (* scale 2) 3)]
+  (let [f (- scale 2) ; full, half, one-third, two-thirds
+        h (/ f 2) 
+        o (/ f 3)
+        t (/ (* f 2) 3)]
       [[h 0] [f h] [h f] [h t] [0 t] [0 o] [h o] [h 0]]))
 
 (defn translate [poly x0 y0]
@@ -156,7 +159,7 @@
   (add-poly bg (translate (map rot-90 arrow) (+ x0 scale) y0) ablue))
 
 (defn draw-cursor [bg x y]
-  (let [[i j] (topleft x y)]
+  (let [[i j] (topleft-inner x y)]
     ((if (across?) arrow-ac arrow-dn) bg i j)))
 
 (defn black-square [bg x y]
@@ -177,10 +180,6 @@
 (defn render [g]
   (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
         bg (. img getGraphics)]
-    (. bg (setColor (. Color black)))
-    (doseq i (range 0 (+ n scale) scale)
-      (. bg drawLine 0 i n i)
-      (. bg drawLine i 0 i n))
 
     (doseq [i j] board-iter
       (square bg i j))
@@ -189,6 +188,11 @@
 
     (doseq [x y] (symm current-x current-y)
       (fill-square bg x y agreen))
+    
+    (. bg (setColor (. Color black)))
+    (doseq i (range 0 (+ n scale) scale)
+      (. bg drawLine 0 i n i)
+      (. bg drawLine i 0 i n))
 
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
