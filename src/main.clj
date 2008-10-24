@@ -21,6 +21,7 @@
 (defn letter [i j] ((board [i j]) 0))
 (defn number [i j] ((board [i j]) 1))
 (defn black? [i j] (= (letter i j) :black))
+(defn white? [i j] (not (black? i j)))
 (defn blank? [i j] (= (letter i j) :empty))
 (defn numbered? [i j] (not (= (number i j) nil)))
 
@@ -33,15 +34,15 @@
 ; numbering
 (defn start-across? [i j] 
   (and 
-    (not (black? i j))
+    (white? i j)
     (or (= i 0) (black? (- i 1) j))
-    (and (< i M) (not (black? (+ i 1) j)))))
+    (and (< i M) (white? (+ i 1) j))))
 
 (defn start-down? [i j] 
   (and 
-    (not (black? i j))
+    (white? i j)
     (or (= j 0) (black? i (- j 1)))
-    (and (< j M) (not (black? i (+ j 1))))))
+    (and (< j M) (white? i (+ j 1)))))
 
 (defn renumber []
   (def n 1)
