@@ -93,8 +93,9 @@
 (def letter-font (new Font "Serif" (. Font PLAIN) 24))
 (def number-font (new Font "Serif" (. Font PLAIN) 12))
 (def text-color (. Color black))
-(def ared  (new Color 255 0 0 128))
-(def ablue (new Color 0 0 255 128))
+(def ared   (new Color 255 0 0 192))
+(def ablue  (new Color 0 0 255 192))
+(def agreen (new Color 0 128 0 64))
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
@@ -133,15 +134,11 @@
 (defn rot-90 ([[i j]] [(- j) i]))
 
 (def arrow
-  (let [x0 0
-        y0 0
-        x1 (/ scale 2)
-        x2 scale
-        y1 (/ scale 3)
-        y2 (/ scale 2)
-        y3 (/ (* scale 2) 3)
-        y4 scale]
-      [[x1 y0] [x2 y2] [x1 y4] [x1 y3] [x0 y3] [x0 y1] [x1 y1] [x1 y0]]))
+  (let [h (/ scale 2) ; half, full, one-third, two-thirds
+        f scale
+        o (/ scale 3)
+        t (/ (* scale 2) 3)]
+      [[h 0] [f h] [h f] [h t] [0 t] [0 o] [h o] [h 0]]))
 
 (defn translate [poly x0 y0]
   (map #(add2 [x0 y0] %) poly))
@@ -161,7 +158,6 @@
 (defn draw-cursor [bg x y]
   (let [[i j] (topleft x y)]
     ((if (across?) arrow-ac arrow-dn) bg i j)))
-  ;(border-square bg x y (if (across?) (. Color red) (. Color blue))))
 
 (defn black-square [bg x y]
   (fill-square bg x y (. Color black)))
@@ -190,6 +186,9 @@
       (square bg i j))
 
     (draw-cursor bg current-x current-y)
+
+    (doseq [x y] (symm current-x current-y)
+      (fill-square bg x y agreen))
 
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
