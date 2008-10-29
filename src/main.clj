@@ -71,6 +71,7 @@
 ; do something in current square
 (defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
 
+; symmetrically add or remove a black square
 (defn place-symm [blk]
   (doseq [i j] (symm current-x current-y) (set-letter i j blk))
   (renumber))
@@ -98,8 +99,10 @@
 (def ablue  (new Color 0 0 255 192))
 (def agreen (new Color 0 128 0 64))
 
+; coordinate manipulations
 (defn add2 [u v] [(+ (u 0) (v 0)) (+ (u 1) (v 1))])
 (defn rot-90 ([[i j]] [(- j) i]))
+(defn translate [poly x0 y0] (map #(add2 [x0 y0] %) poly))
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
@@ -144,8 +147,7 @@
         t (/ (* f 2) 3)]
       [[h 0] [f h] [h f] [h t] [0 t] [0 o] [h o] [h 0]]))
 
-(defn translate [poly x0 y0]
-  (map #(add2 [x0 y0] %) poly))
+(def downarrow (map rot-90 arrow))
 
 (defn add-poly [bg poly col]
   (let [po (new Polygon)]
@@ -157,7 +159,7 @@
   (add-poly bg (translate arrow x0 y0) ared))
 
 (defn arrow-dn [bg x0 y0]
-  (add-poly bg (translate (map rot-90 arrow) (+ x0 scale) y0) ablue))
+  (add-poly bg (translate downarrow (+ x0 scale) y0) ablue))
 
 (defn draw-cursor [bg x y]
   (let [[i j] (topleft-inner x y)]
