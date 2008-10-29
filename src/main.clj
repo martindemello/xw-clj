@@ -14,7 +14,6 @@
 (def N 15)
 (def M (- N 1)) ; since the squares are numbered from 0 .. n-1
 (def board (hash-map))
-
 (def board-iter (for [j (range N) i (range N)] [i j]))
 
 ; accessors
@@ -41,14 +40,14 @@
     (or (= j 0) (black? i (- j 1)))
     (and (< j M) (white? i (+ j 1)))))
 
+(defn start-sqr? [i j]
+  (or (start-across? i j) (start-down? i j)))
+
 (defn renumber []
-  (def n 1)
-  (doseq [i j] board-iter
-    (if (or (start-across? i j) (start-down? i j))
-      (do
-        (set-number i j n)
-        (def n (+ n 1)))
-      (set-number i j nil))))
+  (reduce (fn [n [i j]]
+            (if (start-sqr? i j) 
+              (do (set-number i j n) (inc n))
+              (do (set-number i j nil) n))) 1 board-iter))
 
 ; cursor movement
 (def current-x 0)
@@ -76,12 +75,6 @@
 (defn place-letter [c]
   (when (black? current-x current-y) (place-symm :empty))
   (set-letter current-x current-y c))
-
-; Populate the board with empty cells
-(doseq [i j] board-iter
-  (set-board i j [:empty nil]))
-
-(renumber)
 
 ; Graphics
 
@@ -244,5 +237,14 @@
       (show))
 
     (doto output (setColumns 80))))
+
+; -----------------------------------------
+; main
+; -----------------------------------------
+;; Populate the board with empty cells
+(doseq [i j] board-iter
+  (set-board i j [:empty nil]))
+
+(renumber)
 
 (make-gui)
