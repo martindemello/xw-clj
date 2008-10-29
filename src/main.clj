@@ -1,11 +1,11 @@
 (in-ns 'main)
 (clojure/refer 'clojure)
 
-(import 
+(import
   '(java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
              GridLayout BorderLayout FlowLayout Polygon)
   '(java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
-                  Line2D PathIterator Point2D) 
+                  Line2D PathIterator Point2D)
   '(java.awt.image BufferedImage)
   '(java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
   '(java.awt.font TextLayout FontRenderContext)
@@ -24,22 +24,19 @@
 (defn white? [i j] (not (black? i j)))
 (defn blank? [i j] (= (letter i j) :empty))
 (defn numbered? [i j] (not (= (number i j) nil)))
-
-(defn set-letter [i j l]
-  (def board (assoc board [i j] [l (number i j)])))
-
-(defn set-number [i j n]
-  (def board (assoc board [i j] [(letter i j) n])))
+(defn set-board [i j p] (def board (assoc board [i j] p)))
+(defn set-letter [i j l] (set-board i j [l (number i j)]))
+(defn set-number [i j n] (set-board i j [(letter i j) n]))
 
 ; numbering
-(defn start-across? [i j] 
-  (and 
+(defn start-across? [i j]
+  (and
     (white? i j)
     (or (= i 0) (black? (- i 1) j))
     (and (< i M) (white? (+ i 1) j))))
 
-(defn start-down? [i j] 
-  (and 
+(defn start-down? [i j]
+  (and
     (white? i j)
     (or (= j 0) (black? i (- j 1)))
     (and (< j M) (white? i (+ j 1)))))
@@ -48,7 +45,7 @@
   (def n 1)
   (doseq [i j] board-iter
     (if (or (start-across? i j) (start-down? i j))
-      (do 
+      (do
         (set-number i j n)
         (def n (+ n 1)))
       (set-number i j nil))))
@@ -71,7 +68,7 @@
 ; do something in current square
 (defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
 
-; symmetrically add or remove a black square
+;; symmetrically add or remove a black square
 (defn place-symm [blk]
   (doseq [i j] (symm current-x current-y) (set-letter i j blk))
   (renumber))
@@ -82,7 +79,7 @@
 
 ; Populate the board with empty cells
 (doseq [i j] board-iter
-  (def board (assoc board [i j] [:empty nil])))
+  (set-board i j [:empty nil]))
 
 (renumber)
 
@@ -142,7 +139,7 @@
 
 (def arrow
   (let [f (- scale 2) ; full, half, one-third, two-thirds
-        h (/ f 2) 
+        h (/ f 2)
         o (/ f 3)
         t (/ (* f 2) 3)]
       [[h 0] [f h] [h f] [h t] [0 t] [0 o] [h o] [h 0]]))
@@ -176,7 +173,7 @@
     (draw-number bg x y (number x y))))
 
 (defn square [bg x y]
-  (if (black? x y) 
+  (if (black? x y)
     (black-square bg x y)
     (white-square bg x y)))
 
@@ -191,7 +188,7 @@
 
     (doseq [x y] (symm current-x current-y)
       (fill-square bg x y agreen))
-    
+
     (. bg (setColor (. Color black)))
     (doseq i (range 0 (+ n scale) scale)
       (. bg drawLine 0 i n i)
@@ -200,48 +197,52 @@
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
 
-(def panel 
-  (doto (proxy [JPanel] [] (paint [g] (render g)))
-    (setBackground (. Color white))
-    (setPreferredSize (new Dimension width height))))
-
-(def output (doto (new JTextField) (setColumns 80)))
-
+;; keyboard handling
 (defn char-of [e] (. KeyEvent getKeyText (. e getKeyCode)))
 
-(def key-listener
-  (proxy [KeyAdapter] []
-    (keyPressed 
-      [e] 
-      (let [c (char-of e)]
-        (cond
-          (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-forward))
-          (= c "Space") (do (place-symm :black) (move-forward))
-          (= c "Backspace") (do (move-back) (place-letter :empty))
-          (= c "Delete") (place-letter :empty)
-          (= c "Down")  (move-down)
-          (= c "Up")    (move-up)
-          (= c "Right") (move-right)
-          (= c "Left")  (move-left)
-          (= c "Enter") (flip-dir) 
-          ) 
-        (. output setText (.concat (. output getText) c))
-        (. panel repaint)))))
-  
-(def frame
-  (let [j (new JFrame "xwe")
-        p (. j getContentPane)]
-    (doto p
+(defn board-action [c]
+  (cond
+    (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-forward))
+    (= c "Space") (do (place-symm :black) (move-forward))
+    (= c "Backspace") (do (move-back) (place-letter :empty))
+    (= c "Delete") (place-letter :empty)
+    (= c "Down")  (move-down)
+    (= c "Up")    (move-up)
+    (= c "Right") (move-right)
+    (= c "Left")  (move-left)
+    (= c "Enter") (flip-dir)))
+
+(defn make-gui []
+  (let
+    [panel  (proxy [JPanel] [] (paint [g] (render g)))
+     frame  (new JFrame "xwe")
+     pane   (. frame getContentPane)
+     output (new JTextField)
+     key-listener
+     (proxy [KeyAdapter] []
+       (keyPressed [e]
+                   (let [c (char-of e)]
+                     (board-action c)
+                     (. output setText (.concat (. output getText) c))
+                     (. panel repaint))))]
+
+    (doto panel
+      (setBackground (. Color white))
+      (setPreferredSize (new Dimension width height)))
+
+    (doto pane
       (setLayout (new FlowLayout))
       (add panel)
       (add output))
-    (doto j
+
+    (doto frame
       (setSize 900 750)
-      (show)
       (addWindowListener
         (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
       (setFocusable 'true)
-      (addKeyListener key-listener))))
+      (addKeyListener key-listener)
+      (show))
 
-(defn main [args]
-  (. frame show))
+    (doto output (setColumns 80))))
+
+(make-gui)
