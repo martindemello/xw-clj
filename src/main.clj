@@ -10,7 +10,7 @@
   '(java.awt.image BufferedImage)
   '(java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
   '(java.awt.font TextLayout FontRenderContext)
-  '(javax.swing JFrame JPanel JTextField JList))
+  '(javax.swing JFrame JPanel JTextField JList JScrollPane))
 
 (def N 15)
 (def M (- N 1)) ; since the squares are numbered from 0 .. n-1
@@ -122,7 +122,7 @@
 (defn words-with [re-string]
   (if re-string
     (let [regex (. Pattern compile re-string)]
-      (take 15 (filter #(re-matches regex %) wordlist)))
+      (filter #(re-matches regex %) wordlist))
     []))
 
 ; -----------------------------------------
@@ -130,9 +130,9 @@
 ; -----------------------------------------
 
 (def scale 40)
-(def height 620)
-(def width 800)
 (def n (* N scale))
+(def height (+ n 5))
+(def width (+ n 5))
 (def letter-font (new Font "Serif" (. Font PLAIN) 24))
 (def number-font (new Font "Serif" (. Font PLAIN) 12))
 (def text-color (. Color black))
@@ -262,7 +262,8 @@
      frame  (new JFrame "xwe")
      pane   (. frame getContentPane)
      output (new JTextField)
-     words  (new JList (to-array ["HELLO" "WORLD"]))
+     words  (new JList (to-array []))
+     wpane  (new JScrollPane words)
      key-listener
      (proxy [KeyAdapter] []
        (keyPressed [e]
@@ -277,18 +278,24 @@
       (setBackground (. Color white))
       (setPreferredSize (new Dimension width height)))
 
+    (doto wpane
+      (setPreferredSize (new Dimension 150 n)))
+
+    (let [w (words-with (current-word))]
+      (. words setListData (to-array w)))
+
     (doto pane
-      (setLayout (new FlowLayout))
-      (add panel)
-      (add words)
-      (add output))
+      (setLayout (new BorderLayout))
+      (add panel (. BorderLayout CENTER))
+      (add wpane (. BorderLayout EAST))
+      (add output (. BorderLayout SOUTH)))
 
     (doto frame
-      (setSize 1000 750)
       (addWindowListener
         (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
       (setFocusable 'true)
       (addKeyListener key-listener)
+      (pack)
       (show))
 
     (doto output (setColumns 80))))
