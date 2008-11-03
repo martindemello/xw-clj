@@ -117,11 +117,13 @@
 ; Wordlist
 ; -----------------------------------------
 
-(def words (seq (.split "\n" (slurp "csw.txt"))))
+(def wordlist (seq (.split (slurp "csw.txt") "\n")))
 
 (defn words-with [re-string]
-  (let [regex (. Pattern compile re-string)]
-    (filter #(re-matches regex %) words)))
+  (if re-string
+    (let [regex (. Pattern compile re-string)]
+      (take 15 (filter #(re-matches regex %) wordlist)))
+    ["NONE"]))
 
 ; -----------------------------------------
 ; Graphics
@@ -266,7 +268,9 @@
        (keyPressed [e]
                    (let [c (char-of e)]
                      (board-action c)
-                     (. output setText (current-word))
+                     (let [w (words-with (current-word))]
+                       (. words setListData (to-array w)) 
+                       (. output setText (str (current-word) (first w))))
                      (. panel repaint))))]
 
     (doto panel
