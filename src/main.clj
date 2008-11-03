@@ -123,7 +123,7 @@
   (if re-string
     (let [regex (. Pattern compile re-string)]
       (take 15 (filter #(re-matches regex %) wordlist)))
-    ["NONE"]))
+    []))
 
 ; -----------------------------------------
 ; Graphics
@@ -284,7 +284,7 @@
       (add output))
 
     (doto frame
-      (setSize 900 750)
+      (setSize 1000 750)
       (addWindowListener
         (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
       (setFocusable 'true)
