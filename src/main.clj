@@ -1,7 +1,7 @@
-(in-ns 'main)
-(clojure/refer 'clojure)
+(in-ns 'xw)
+(clojure.core/refer 'clojure.core)
 
-(import
+(clojure.core/import
   '(java.util.regex Pattern)
   '(java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
              GridLayout BorderLayout FlowLayout Polygon)
@@ -70,7 +70,7 @@
 
 ;; symmetrically add or remove a black square
 (defn place-symm [blk]
-  (doseq [i j] (symm current-x current-y) (set-letter i j blk))
+  (doseq [[i j] (symm current-x current-y)] (set-letter i j blk))
   (renumber))
 
 (defn place-letter [c]
@@ -126,6 +126,10 @@
     []))
 
 ; -----------------------------------------
+; Load and Save
+; -----------------------------------------
+
+; -----------------------------------------
 ; Graphics
 ; -----------------------------------------
 
@@ -161,25 +165,25 @@
 
 (defn draw-letter [bg x y l]
   (in-square [i j] bg x y
-             (setColor text-color)
-             (setFont letter-font)
-             (drawString l (+ i 15) (+ j (- scale 10)))))
+             (.setColor text-color)
+             (.setFont letter-font)
+             (.drawString l (+ i 15) (+ j (- scale 10)))))
 
 (defn draw-number [bg x y n]
   (in-square [i j] bg x y
-             (setColor text-color)
-             (setFont number-font)
-             (drawString (pr-str n) (+ i 2) (+ j 12))))
+             (.setColor text-color)
+             (.setFont number-font)
+             (.drawString (pr-str n) (+ i 2) (+ j 12))))
 
 (defn fill-square [bg x y color]
   (in-square [i j] bg x y
-             (setColor color)
-             (fillRect (+ i 1) (+ j 1) (- scale 1) (- scale 1))))
+             (.setColor color)
+             (.fillRect (+ i 1) (+ j 1) (- scale 1) (- scale 1))))
 
 (defn border-square [bg x y color]
   (in-square [i j] bg x y
-             (setColor color)
-             (drawRect (+ i 1) (+ j 1) (- scale 2) (- scale 2))))
+             (.setColor color)
+             (.drawRect (+ i 1) (+ j 1) (- scale 2) (- scale 2))))
 
 (def arrow
   (let [f (- scale 2) ; full, half, one-third, two-thirds
@@ -192,7 +196,7 @@
 
 (defn add-poly [bg poly col]
   (let [po (new Polygon)]
-    (doseq [i j] poly (. po addPoint i j))
+    (doseq [[i j] poly] (. po addPoint i j))
     (. bg setColor col)
     (. bg fillPolygon po)))
 
@@ -225,16 +229,16 @@
   (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
         bg (. img getGraphics)]
 
-    (doseq [i j] board-iter
+    (doseq [[i j] board-iter]
       (square bg i j))
 
     (draw-cursor bg current-x current-y)
 
-    (doseq [x y] (symm current-x current-y)
+    (doseq [[x y] (symm current-x current-y)]
       (fill-square bg x y agreen))
 
     (. bg (setColor (. Color black)))
-    (doseq i (range 0 (+ n scale) scale)
+    (doseq [i (range 0 (+ n scale) scale)]
       (. bg drawLine 0 i n i)
       (. bg drawLine i 0 i n))
 
@@ -275,36 +279,36 @@
                      (. panel repaint))))]
 
     (doto panel
-      (setBackground (. Color white))
-      (setPreferredSize (new Dimension width height)))
+      (.setBackground (. Color white))
+      (.setPreferredSize (new Dimension width height)))
 
     (doto wpane
-      (setPreferredSize (new Dimension 150 n)))
+      (.setPreferredSize (new Dimension 150 n)))
 
     (let [w (words-with (current-word))]
       (. words setListData (to-array w)))
 
     (doto pane
-      (setLayout (new BorderLayout))
-      (add panel (. BorderLayout CENTER))
-      (add wpane (. BorderLayout EAST))
-      (add output (. BorderLayout SOUTH)))
+      (.setLayout (new BorderLayout))
+      (.add panel (. BorderLayout CENTER))
+      (.add wpane (. BorderLayout EAST))
+      (.add output (. BorderLayout SOUTH)))
 
     (doto frame
-      (addWindowListener
+      (.addWindowListener
         (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
-      (setFocusable 'true)
-      (addKeyListener key-listener)
-      (pack)
-      (show))
+      (.setFocusable 'true)
+      (.addKeyListener key-listener)
+      (.pack)
+      (.show))
 
-    (doto output (setColumns 80))))
+    (doto output (.setColumns 80))))
 
 ; -----------------------------------------
 ; main
 ; -----------------------------------------
 ;; Populate the board with empty cells
-(doseq [i j] board-iter
+(doseq [[i j] board-iter]
   (set-board i j [:empty nil]))
 
 (renumber)
