@@ -313,4 +313,16 @@
 
 (renumber)
 
-(make-gui)
+;(make-gui)
+(import '(gui MainFrame))
+(def mf (MainFrame.))
+(def gridpanel (.gridpanel mf))
+(doto gridpanel
+  (.setBackground (. Color white))
+  (.setPreferredSize (new Dimension width height)))
+(def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
+(doto gridpanel
+  (.setLayout (new BorderLayout))
+  (.add gpanel (. BorderLayout CENTER)))
+(. gpanel repaint)
+(.setVisible mf true)
