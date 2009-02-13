@@ -134,12 +134,12 @@
 ; Graphics
 ; -----------------------------------------
 
-(def scale 40)
+(def scale 30)
 (def n (* N scale))
 (def height (+ n 5))
 (def width (+ n 5))
-(def letter-font (new Font "Serif" (. Font PLAIN) 24))
-(def number-font (new Font "Serif" (. Font PLAIN) 12))
+(def letter-font (new Font "Arial" (. Font PLAIN) 18))
+(def number-font (new Font "Serif" (. Font PLAIN) 9))
 (def text-color (. Color black))
 (def ared   (new Color 255 0 0 192))
 (def ablue  (new Color 0 0 255 192))
@@ -168,7 +168,7 @@
   (in-square [i j] bg x y
              (.setColor text-color)
              (.setFont letter-font)
-             (.drawString l (+ i 15) (+ j (- scale 10)))))
+             (.drawString l (+ i 11) (+ j (- scale 6)))))
 
 (defn draw-number [bg x y n]
   (in-square [i j] bg x y
@@ -269,13 +269,12 @@
      gpanel  (proxy [JPanel] [] (paint [g] (render g)))
      update-wlist #(let [w (words-with (current-word))]
                        (. words setListData (to-array w)))
-     key-listener
-     (proxy [KeyAdapter] []
-       (keyPressed [e]
-                   (let [c (char-of e)]
-                     (board-action c)
-                     (update-wlist)
-                     (. gpanel repaint))))
+     key-listener (proxy [KeyAdapter] []
+                    (keyPressed [e]
+                                (let [c (char-of e)]
+                                  (board-action c)
+                                  (update-wlist)
+                                  (. gpanel repaint))))
      ]
 
     (doto gpanel
