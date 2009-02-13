@@ -317,12 +317,13 @@
 (import '(gui MainFrame))
 (def mf (MainFrame.))
 (def gridpanel (.gridpanel mf))
-(doto gridpanel
+(def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
+(doto gpanel
   (.setBackground (. Color white))
   (.setPreferredSize (new Dimension width height)))
-(def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
 (doto gridpanel
   (.setLayout (new BorderLayout))
   (.add gpanel (. BorderLayout CENTER)))
 (. gpanel repaint)
+(. mf pack)
 (.setVisible mf true)
