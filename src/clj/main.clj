@@ -2,6 +2,7 @@
 (clojure.core/refer 'clojure.core)
 
 (clojure.core/import
+  '(gui MainFrame)
   '(java.util.regex Pattern)
   '(java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
              GridLayout BorderLayout FlowLayout Polygon)
@@ -314,16 +315,22 @@
 (renumber)
 
 ;(make-gui)
-(import '(gui MainFrame))
-(def mf (MainFrame.))
-(def gridpanel (.gridpanel mf))
-(def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
-(doto gpanel
-  (.setBackground (. Color white))
-  (.setPreferredSize (new Dimension width height)))
-(doto gridpanel
-  (.setLayout (new BorderLayout))
-  (.add gpanel (. BorderLayout CENTER)))
-(. gpanel repaint)
-(. mf pack)
-(.setVisible mf true)
+
+(defn init-gui []
+  (let
+    [mf (MainFrame.)
+     gridpanel (.gridpanel mf)
+     wordarea (.wordarea mf)
+     gpanel  (proxy [JPanel] [] (paint [g] (render g)))
+     ]
+    (doto gpanel
+      (.setBackground (. Color white))
+      (.setPreferredSize (new Dimension width height)))
+    (doto gridpanel
+      (.setLayout (new BorderLayout))
+      (.add gpanel (. BorderLayout CENTER)))
+    (. gpanel repaint)
+    (. mf pack)
+    (.setVisible mf true)))
+
+(init-gui)
