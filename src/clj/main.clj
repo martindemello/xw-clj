@@ -261,41 +261,33 @@
     (= c "Left")  (move-left)
     (= c "Enter") (flip-dir)))
 
-(defn make-gui []
+(defn init-gui []
   (let
-    [panel  (proxy [JPanel] [] (paint [g] (render g)))
-     frame  (new JFrame "xwe")
-     pane   (. frame getContentPane)
-     output (new JTextField)
-     words  (new JList (to-array []))
-     wpane  (new JScrollPane words)
+    [mf (MainFrame.)
+     gridpanel (.gridpanel mf)
+     words (.wordlist mf)
+     gpanel  (proxy [JPanel] [] (paint [g] (render g)))
+     update-wlist #(let [w (words-with (current-word))]
+                       (. words setListData (to-array w)))
      key-listener
      (proxy [KeyAdapter] []
        (keyPressed [e]
                    (let [c (char-of e)]
                      (board-action c)
-                     (let [w (words-with (current-word))]
-                       (. words setListData (to-array w)) 
-                       (. output setText (str (current-word) (first w))))
-                     (. panel repaint))))]
+                     (update-wlist)
+                     (. gpanel repaint))))
+     ]
 
-    (doto panel
+    (doto gpanel
       (.setBackground (. Color white))
-      (.setPreferredSize (new Dimension width height)))
+      (.setPreferredSize (new Dimension width height))
+      (.repaint))
 
-    (doto wpane
-      (.setPreferredSize (new Dimension 150 n)))
-
-    (let [w (words-with (current-word))]
-      (. words setListData (to-array w)))
-
-    (doto pane
+    (doto gridpanel
       (.setLayout (new BorderLayout))
-      (.add panel (. BorderLayout CENTER))
-      (.add wpane (. BorderLayout EAST))
-      (.add output (. BorderLayout SOUTH)))
+      (.add gpanel (. BorderLayout CENTER)))
 
-    (doto frame
+    (doto mf
       (.addWindowListener
         (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
       (.setFocusable 'true)
@@ -303,7 +295,7 @@
       (.pack)
       (.show))
 
-    (doto output (.setColumns 80))))
+    (update-wlist)))
 
 ; -----------------------------------------
 ; main
@@ -313,24 +305,5 @@
   (set-board i j [:empty nil]))
 
 (renumber)
-
-;(make-gui)
-
-(defn init-gui []
-  (let
-    [mf (MainFrame.)
-     gridpanel (.gridpanel mf)
-     wordarea (.wordarea mf)
-     gpanel  (proxy [JPanel] [] (paint [g] (render g)))
-     ]
-    (doto gpanel
-      (.setBackground (. Color white))
-      (.setPreferredSize (new Dimension width height)))
-    (doto gridpanel
-      (.setLayout (new BorderLayout))
-      (.add gpanel (. BorderLayout CENTER)))
-    (. gpanel repaint)
-    (. mf pack)
-    (.setVisible mf true)))
 
 (init-gui)
