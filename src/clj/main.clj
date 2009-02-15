@@ -1,4 +1,5 @@
-(in-ns 'xw)
+(ns xw
+  (:load swing))
 (clojure.core/refer 'clojure.core)
 
 (clojure.core/import
@@ -260,41 +261,6 @@
     (= c "Right") (move-right)
     (= c "Left")  (move-left)
     (= c "Enter") (flip-dir)))
-
-(defn init-gui []
-  (let
-    [mf (MainFrame.)
-     gridpanel (.gridpanel mf)
-     words (.wordlist mf)
-     gpanel  (proxy [JPanel] [] (paint [g] (render g)))
-     update-wlist #(let [w (words-with (current-word))]
-                       (. words setListData (to-array w)))
-     key-listener (proxy [KeyAdapter] []
-                    (keyPressed [e]
-                                (let [c (char-of e)]
-                                  (board-action c)
-                                  (update-wlist)
-                                  (. gpanel repaint))))
-     ]
-
-    (doto gpanel
-      (.setBackground (. Color white))
-      (.setPreferredSize (new Dimension width height))
-      (.repaint))
-
-    (doto gridpanel
-      (.setLayout (new BorderLayout))
-      (.add gpanel (. BorderLayout CENTER)))
-
-    (doto mf
-      (.addWindowListener
-        (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
-      (.setFocusable 'true)
-      (.addKeyListener key-listener)
-      (.pack)
-      (.show))
-
-    (update-wlist)))
 
 ; -----------------------------------------
 ; main
