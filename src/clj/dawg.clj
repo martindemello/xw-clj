@@ -13,7 +13,8 @@
 ; s = index of next sibling [b5 b4 b1]
 
 (def dawg (FileUtils/readFileToByteArray (File. "words.dawg")))
-(def A 65)
+(def ?a 97)
+(def ?z 122)
 (def b<< bit-shift-left)
 (def b>> bit-shift-right)
 (def b& bit-and)
@@ -53,10 +54,35 @@
     :else (recur (next-sib ix) letter)))
 
 (defn sibs [ix]
-  (loop [i ix acc (list (list ix (letter-c ix)))]
+  (loop [i ix acc (list ix)]
     (let [n (next-sib i)]
       (cond
         (zero? n) (reverse acc)
-        :else (recur n (cons (list n (letter-c n)) acc))))))
+        :else (recur n (cons n acc))))))
 
+(defn alpha? [c] (and (<= (int c) 25) (>= (int c) 0)))
 
+(defn to-word [trail]
+   (apply str (map #(char (+ (int %) ?a)) trail)))
+
+(defn to-nums [word]
+  (map #(- (int %) ?a) word))
+
+(defn terminate [trail wordp acc]
+  (if wordp (cons (to-word (reverse trail)) acc) acc))
+
+(defn patt [p ix trail wordp acc]
+  (print [(map #(char (+ % ?a)) p) ix trail wordp acc])
+  (if (empty? p) 
+    (terminate trail wordp acc)
+    (let [h (first p)
+          t (rest p)]
+      (cond
+        (alpha? h) 
+        (let [n (find-letter ix h)]
+          (if n
+            (patt t (child n) (cons h trail) (eow? n) acc)
+            '()))))))
+
+(defn pattern [p]
+  (patt p 0 '() false '()))
