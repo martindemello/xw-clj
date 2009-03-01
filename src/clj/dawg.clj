@@ -71,18 +71,21 @@
 (defn terminate [trail wordp acc]
   (if wordp (cons (to-word (reverse trail)) acc) acc))
 
+(declare follow)
+
 (defn patt [p ix trail wordp acc]
-  (print [(map #(char (+ % ?a)) p) ix trail wordp acc])
+  ;(print [(map #(char (+ % ?a)) p) ix trail wordp acc])
   (if (empty? p) 
     (terminate trail wordp acc)
     (let [h (first p)
           t (rest p)]
       (cond
-        (alpha? h) 
-        (let [n (find-letter ix h)]
-          (if n
-            (patt t (child n) (cons h trail) (eow? n) acc)
-            '()))))))
+        (alpha? h) (let [n (find-letter ix h)]
+                     (if n (follow h t n trail acc) '()))
+        :else (reduce concat acc (map #(follow (letter-n %) t % trail acc) (sibs ix))) ))))
+
+(defn follow [h t n trail acc]
+  (patt t (child n) (cons h trail) (eow? n) acc))
 
 (defn pattern [p]
   (patt p 0 '() false '()))
