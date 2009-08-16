@@ -1,14 +1,16 @@
-(clojure.core/import
-  '(gui MainFrame)
-  '(java.util.regex Pattern)
-  '(java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
-             GridLayout BorderLayout FlowLayout Polygon)
-  '(java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
-                  Line2D PathIterator Point2D)
-  '(java.awt.image BufferedImage)
-  '(java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
-  '(java.awt.font TextLayout FontRenderContext)
-  '(javax.swing JFrame JPanel JTextField JList JScrollPane))
+(ns xw
+  (:import (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane JSeparator SwingUtilities)
+     (java.util.regex Pattern)
+     (java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
+               GridLayout BorderLayout FlowLayout Polygon)
+     (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
+                    Line2D PathIterator Point2D)
+     (java.awt.image BufferedImage)
+     (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
+     (java.awt.font TextLayout FontRenderContext))
+  (:use (clojure.contrib
+         [miglayout :only (miglayout components)]
+         [swing-utils :only (add-key-typed-listener)])))
 
 ; -----------------------------------------
 ; Graphics
@@ -142,14 +144,25 @@
     (= c "Enter") (flip-dir)))
 
 ;; layout and widgets
-(def mf (MainFrame.))
-(def gridpanel (.gridpanel mf))
-(def words (.wordlist mf))
+(def words (JList.))
+(defn xw-ui []
+  (let [panel (miglayout (JPanel.)
+                         (JPanel.) {:id :gridpanel} :growy
+                         (JScrollPane. words) {:id :wlist :width 200 :height height} )
+        frame (JFrame. "Crossword Editor")
+        ]
+    { :frame frame :panel panel}))
+
+(def ui (xw-ui))
+(def mf (ui :frame))
+(def panel (ui :panel))
+(def gridpanel ((components panel) :gridpanel))
+(def wlist ((components panel) :wlist))
 (def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
-(def update-wlist #(let [w (words-with (current-word))]
+(def update-wlist #(let [w (take 26 (words-with (current-word)))]
                        (. words setListData (to-array w))))
 
-(def key-listener 
+(def key-listener
   (proxy [KeyAdapter] []
     (keyPressed [e]
                 (let [c (char-of e)]
@@ -158,6 +171,15 @@
                   (. gpanel repaint)))))
 
 (defn init-gui []
+  (doto mf
+    (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
+    (.add panel)
+    (.pack)
+    (.setVisible true))
+
+  (doto wlist
+    (.add words))
+
   (doto gpanel
     (.setBackground (. Color white))
     (.setPreferredSize (new Dimension width height))
@@ -175,5 +197,6 @@
     (.pack)
     (.show))
 
-  (update-wlist))
+  (update-wlist)
+ )
 
