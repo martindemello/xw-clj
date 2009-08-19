@@ -9,8 +9,8 @@
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
-         [miglayout :only (miglayout components)]
-         [swing-utils :only (add-key-typed-listener)])))
+          [miglayout :only (miglayout components)]
+          [swing-utils :only (add-key-typed-listener make-menubar make-action)])))
 
 ; -----------------------------------------
 ; Graphics
@@ -73,7 +73,7 @@
         h (/ f 2)
         o (/ f 3)
         t (/ (* f 2) 3)]
-      [[h 0] [f h] [h f] [h t] [0 t] [0 o] [h o] [h 0]]))
+    [[h 0] [f h] [h f] [h t] [0 t] [0 o] [h o] [h 0]]))
 
 (def downarrow (map rot-90 arrow))
 
@@ -160,7 +160,9 @@
 (def wlist ((components panel) :wlist))
 (def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
 (def update-wlist #(let [w (take 26 (words-with (current-word)))]
-                       (. words setListData (to-array w))))
+                     (. words setListData (to-array w))))
+
+(defn exit [] (. System exit 0))
 
 (def key-listener
   (proxy [KeyAdapter] []
@@ -170,12 +172,54 @@
                   (update-wlist)
                   (. gpanel repaint)))))
 
+(defn save-file-handler [_] (print "hello"))
+(defn load-file-handler [_] (print "hello"))
+(defn new-file-handler [_] (print "hello"))
+(defn show-about [_] (print "world"))
+
+(defn init-menu [frame]
+  (let [menubar-spec
+        [{:name     "File"
+          :mnemonic KeyEvent/VK_F
+          :items
+          [{:name       "New"
+            :mnemonic   KeyEvent/VK_N
+            :short-desc "New crossword"
+            :long-desc  "Start a new crossword"
+            :handler    new-file-handler}
+           {:name       "Open"
+            :mnemonic   KeyEvent/VK_O
+            :short-desc "Open crossword"
+            :long-desc  "Open a saved crossword"
+            :handler    load-file-handler}
+           {:name       "Save"
+            :mnemonic   KeyEvent/VK_S
+            :short-desc "Save file"
+            :long-desc  "Save the file to disk. No-op if file not modified"
+            :handler    save-file-handler}
+           {} ; <- adds a separator
+           {:name     "Exit"
+            :mnemonic KeyEvent/VK_X
+            :handler  (fn [_] (exit))}]}
+         {:name     "Help"
+          :mnemonic KeyEvent/VK_H
+          :items    [{:name     "About"
+                      :mnemonic KeyEvent/VK_A
+                      :handler  (fn [_] (show-about))}]}]
+        menubar      (make-menubar menubar-spec)]
+    (doto frame
+      (.setJMenuBar menubar)
+      (.pack)
+      (.setVisible true))))
+
 (defn init-gui []
   (doto mf
     (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
     (.add panel)
     (.pack)
     (.setVisible true))
+
+  (init-menu mf)
 
   (doto wlist
     (.add words))
@@ -191,12 +235,12 @@
 
   (doto mf
     (.addWindowListener
-      (proxy [WindowAdapter] [] (windowClosing [e] (. System exit 0))))
+      (proxy [WindowAdapter] [] (windowClosing [e] (exit))))
     (.setFocusable 'true)
     (.addKeyListener key-listener)
     (.pack)
     (.show))
 
   (update-wlist)
- )
+  )
 
