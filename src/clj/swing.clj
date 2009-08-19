@@ -245,5 +245,6 @@
     (.show))
 
   (update-wlist)
+  (. mf requestFocus)
   )
 
