@@ -9,6 +9,7 @@
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
+          [duck-streams :only (spit)]
           [miglayout :only (miglayout components)]
           [swing-utils :only (add-key-typed-listener make-menubar make-action)])))
 
@@ -172,8 +173,10 @@
                   (update-wlist)
                   (. gpanel repaint)))))
 
-(defn save-file-handler [_] (print "hello"))
-(defn load-file-handler [_] (print "hello"))
+(defn save-file-handler [_] (spit "test.xw" (board-to-str)))
+(defn load-file-handler [_]
+  (str-to-board (slurp "test.xw"))
+  (renumber))
 (defn new-file-handler [_] (print "hello"))
 (defn show-about [_] (print "world"))
 

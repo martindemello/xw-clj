@@ -33,3 +33,26 @@
             (if (start-sqr? i j) 
               (do (set-number i j n) (inc n))
               (do (set-number i j nil) n))) 1 board-iter))
+
+; serialise/deserialise
+(defn cell-to-str [[i j]]
+  (let [l (letter i j)]
+    (cond
+      (= l :empty) "."
+      (= l :black) "#"
+      true l)))
+
+(defn str-to-cell [s]
+  (cond
+    (= s ".") :empty
+    (= s "#") :black
+    true s))
+
+(defn board-to-str []
+  (apply str (map cell-to-str board-iter)))
+
+(defn explode [s] (map str (seq s)))
+(defn fill-cell [[i j] c] (set-letter i j (str-to-cell c)))
+
+(defn str-to-board [s]
+  (dorun (map fill-cell board-iter (explode s))))
