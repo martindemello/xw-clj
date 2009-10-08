@@ -4,9 +4,9 @@
   (:load "cursor")
   (:load "wordlist")
   (:load "swing"))
-(clojure.core/refer 'clojure.core)
+(refer 'clojure.core)
 
-(clojure.core/import
+(import
   '(java.util.regex Pattern))
 
 ; -----------------------------------------

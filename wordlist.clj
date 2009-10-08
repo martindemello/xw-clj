@@ -1,14 +1,9 @@
-(clojure.core/import
-  '(java.util.regex Pattern))
-
+(use '[clojure.contrib.str-utils2 :only (split)])
 ; -----------------------------------------
 ; Wordlist
 ; -----------------------------------------
 
-(def wordlist (seq (.split (slurp "csw.txt") "\n")))
+(def wordlist (split (slurp "csw.txt") #"\n"))
 
-(defn words-with [re-string]
-  (if re-string
-    (let [regex (. Pattern compile re-string)]
-      (filter #(re-matches regex %) wordlist))
-    []))
+(defn words-with [re]
+  (filter #(re-matches (re-pattern %)) wordlist))
