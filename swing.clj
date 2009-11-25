@@ -1,6 +1,5 @@
 (ns xw
   (:import (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane JSeparator SwingUtilities)
-     (java.util.regex Pattern)
      (java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
                GridLayout BorderLayout FlowLayout Polygon)
      (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
@@ -176,7 +175,9 @@
 (defn save-file-handler [_] (spit "test.xw" (board-to-str)))
 (defn load-file-handler [_]
   (str-to-board (slurp "test.xw"))
-  (renumber))
+  (renumber)
+  (. gpanel repaint))
+
 (defn new-file-handler [_] (print "hello"))
 (defn show-about [_] (print "world"))
 
@@ -208,7 +209,7 @@
           :mnemonic KeyEvent/VK_H
           :items    [{:name     "About"
                       :mnemonic KeyEvent/VK_A
-                      :handler  (fn [_] (show-about))}]}]
+                      :handler  show-about}]}]
         menubar      (make-menubar menubar-spec)]
     (doto frame
       (.setJMenuBar menubar)
@@ -247,4 +248,3 @@
   (update-wlist)
   (. mf requestFocus)
   )
-

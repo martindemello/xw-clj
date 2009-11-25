@@ -6,9 +6,6 @@
   (:load "swing"))
 (refer 'clojure.core)
 
-(import
-  '(java.util.regex Pattern))
-
 ; -----------------------------------------
 ; Load and Save
 ; -----------------------------------------

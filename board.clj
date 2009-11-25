@@ -1,4 +1,4 @@
-(def board (hash-map))
+(def board {})
 (def board-iter (for [j (range N) i (range N)] [i j]))
 
 ; accessors
@@ -52,6 +52,7 @@
   (apply str (map cell-to-str board-iter)))
 
 (defn explode [s] (map str (seq s)))
+
 (defn fill-cell [[i j] c] (set-letter i j (str-to-cell c)))
 
 (defn str-to-board [s]
