@@ -1,3 +1,7 @@
+(ns xw.board
+  (:use xw.globals))
+
+
 (def board {})
 (def board-iter (for [j (range N) i (range N)] [i j]))
 

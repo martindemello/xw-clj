@@ -1,4 +1,7 @@
-(use '[clojure.contrib.str-utils2 :only (split)])
+(ns xw.wordlist
+  (:use [clojure.contrib.str-utils2 :only (split)])
+  (:use xw.globals))
+
 ; -----------------------------------------
 ; Wordlist
 ; -----------------------------------------

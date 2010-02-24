@@ -1,4 +1,9 @@
-; cursor movement
+
+(ns xw.cursor
+  (:use (xw globals board)))
+
+ 
+;cursor movement
 (def current-x 0)
 (def current-y 0)
 (def current-dir :across)

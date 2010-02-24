@@ -1,4 +1,4 @@
-(ns xw
+(ns xw.swing
   (:import (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane JSeparator SwingUtilities)
      (java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
                GridLayout BorderLayout FlowLayout Polygon)
@@ -8,9 +8,11 @@
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
-          [duck-streams :only (spit)]
-          [miglayout :only (miglayout components)]
-          [swing-utils :only (add-key-typed-listener make-menubar make-action)])))
+                    [duck-streams :only (spit)]
+                    [miglayout :only (miglayout components)]
+                    [swing-utils :only (add-key-typed-listener make-menubar make-action)]))
+  (:use (xw globals board cursor wordlist)))
+
 
 ; -----------------------------------------
 ; Graphics
