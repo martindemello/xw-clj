@@ -5,7 +5,7 @@
                  [commons-io "1.2"]
                  [commons-cli "1.1"]
                  [com.miglayout/miglayout "3.7.2"]]
-  :main [xw]
+  :main xw.main
   :namespaces [xw.main])
  
 

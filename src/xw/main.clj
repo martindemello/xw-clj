@@ -1,4 +1,5 @@
 (ns xw.main
+  (:gen-class)
   (:use xw.globals)
   (:use xw.wordlist)
   (:use xw.board)
