@@ -5,7 +5,8 @@
      (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
                     Line2D PathIterator Point2D)
      (java.awt.image BufferedImage)
-     (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent InputEvent)
+     (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
+                     InputEvent MouseAdapter)
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
                     [duck-streams :only (spit)]
@@ -185,6 +186,11 @@
                     true (board-action c))
                   (. gpanel repaint)))))
 
+(def mouse-listener
+  (proxy [MouseAdapter] []
+     (mouseClicked [e]
+                   (. mf requestFocus))))
+
 (defn save-file-handler [_] (spit "test.xw" (board-to-str)))
 (defn load-file-handler [_]
   (str-to-board (slurp "test.xw"))
@@ -255,6 +261,7 @@
       (proxy [WindowAdapter] [] (windowClosing [e] (exit))))
     (.setFocusable 'true)
     (.addKeyListener key-listener)
+    (.addMouseListener mouse-listener)
     (.pack)
     (.show))
 
