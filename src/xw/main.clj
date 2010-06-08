@@ -16,3 +16,5 @@
     (set-board i j [:empty nil]))
   (renumber)
   (init-gui))
+
+(-main)

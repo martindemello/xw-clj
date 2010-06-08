@@ -1,12 +1,13 @@
 (ns xw.wordlist
-  (:use [clojure.contrib.str-utils2 :only (split)])
   (:use xw.globals))
+
+(require '[clojure.contrib.str-utils2 :as s])
 
 ; -----------------------------------------
 ; Wordlist
 ; -----------------------------------------
 
-(def wordlist (split (slurp "csw.txt") #"\n"))
+(def wordlist (s/split (slurp "csw.txt") #"\n"))
 
 (defn words-with [re]
   (if re
