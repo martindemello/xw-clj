@@ -5,7 +5,7 @@
      (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
                     Line2D PathIterator Point2D)
      (java.awt.image BufferedImage)
-     (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent)
+     (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent InputEvent)
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
                     [duck-streams :only (spit)]
@@ -132,6 +132,16 @@
 
 ;; keyboard handling
 (defn char-of [e] (. KeyEvent getKeyText (. e getKeyCode)))
+(defn modifier [e] (. e getModifiers))
+(defn modtext [e] (. KeyEvent getKeyModifiersText (modifier e)))
+(def CTRL (. InputEvent CTRL_MASK))
+(defn ctrl? [e] (= CTRL (bit-and (modifier e) CTRL)))
+
+(declare update-wlist)
+
+(defn on-ctrl-key [c]
+  (cond
+    (= c "R") (update-wlist)))
 
 (defn board-action [c]
   (cond
@@ -170,8 +180,9 @@
   (proxy [KeyAdapter] []
     (keyPressed [e]
                 (let [c (char-of e)]
-                  (board-action c)
-                  (update-wlist)
+                  (cond
+                    (ctrl? e) (on-ctrl-key c)
+                    true (board-action c))
                   (. gpanel repaint)))))
 
 (defn save-file-handler [_] (spit "test.xw" (board-to-str)))
@@ -247,6 +258,5 @@
     (.pack)
     (.show))
 
-  (update-wlist)
   (. mf requestFocus)
   )
