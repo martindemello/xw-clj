@@ -1,5 +1,7 @@
 (ns xw.swing
-  (:import (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane JSeparator SwingUtilities)
+  (:import
+     (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
+                  JSeparator SwingUtilities JFileChooser)
      (java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
                GridLayout BorderLayout FlowLayout Polygon)
      (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
@@ -191,7 +193,13 @@
      (mouseClicked [e]
                    (. mf requestFocus))))
 
-(defn save-file-handler [_] (spit "test.xw" (board-to-str)))
+(defn save-file-handler [_]
+  (let [fc (JFileChooser.)]
+    (when (= (.showSaveDialog fc mf) JFileChooser/APPROVE_OPTION)
+      (let [f (.getSelectedFile fc)]
+        (println f)
+        (spit f (board-to-str))))))
+
 (defn load-file-handler [_]
   (str-to-board (slurp "test.xw"))
   (renumber)
