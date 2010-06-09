@@ -11,7 +11,7 @@
                      InputEvent MouseAdapter)
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
-                    [duck-streams :only (spit)]
+                    [duck-streams :only (spit slurp*)]
                     [miglayout :only (miglayout components)]
                     [swing-utils :only (add-key-typed-listener make-menubar make-action)]))
   (:use (xw globals board cursor wordlist)))
@@ -201,9 +201,12 @@
         (spit f (board-to-str))))))
 
 (defn load-file-handler [_]
-  (str-to-board (slurp "test.xw"))
-  (renumber)
-  (. gpanel repaint))
+  (let [fc (JFileChooser.)]
+    (when (= (.showOpenDialog fc mf) JFileChooser/APPROVE_OPTION)
+      (let [f (.getSelectedFile fc)]
+        (str-to-board (slurp* f))
+        (renumber)
+        (. gpanel repaint)))))
 
 (defn new-file-handler [_] (print "hello"))
 (defn show-about [_] (print "world"))
