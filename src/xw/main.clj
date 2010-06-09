@@ -12,9 +12,7 @@
 ;; Populate the board with empty cells
 
 (defn -main []
-  (doseq [[i j] board-iter]
-    (set-board i j [:empty nil]))
-  (renumber)
+  (new-board)
   (init-gui))
 
 (-main)

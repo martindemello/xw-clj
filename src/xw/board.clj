@@ -59,5 +59,10 @@
 
 (defn fill-cell [[i j] c] (set-letter i j (str-to-cell c)))
 
-(defn str-to-board [s]
-  (dorun (map fill-cell board-iter (explode s))))
+(defn read-board-from-str [s]
+  (dorun (map fill-cell board-iter (explode s)))
+  (renumber))
+
+(defn new-board []
+  (doseq [[i j] board-iter] (set-board i j [:empty nil]))
+  (renumber))

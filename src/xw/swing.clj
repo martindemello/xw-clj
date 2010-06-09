@@ -204,11 +204,13 @@
   (let [fc (JFileChooser.)]
     (when (= (.showOpenDialog fc mf) JFileChooser/APPROVE_OPTION)
       (let [f (.getSelectedFile fc)]
-        (str-to-board (slurp* f))
-        (renumber)
+        (read-board-from-str (slurp* f))
         (. gpanel repaint)))))
 
-(defn new-file-handler [_] (print "hello"))
+(defn new-file-handler [_]
+  (new-board)
+  (. gpanel repaint))
+
 (defn show-about [_] (print "world"))
 
 (defn init-menu [frame]
