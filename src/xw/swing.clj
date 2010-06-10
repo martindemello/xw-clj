@@ -1,7 +1,7 @@
 (ns xw.swing
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
-                  JSeparator SwingUtilities JFileChooser)
+                  JSeparator SwingUtilities JFileChooser BorderFactory)
      (java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
                GridLayout BorderLayout FlowLayout Polygon)
      (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
@@ -161,23 +161,43 @@
     (= c "Enter") (flip-dir)))
 
 ;; layout and widgets
+
+; list of possible words
 (def words (JList.))
-(defn xw-ui []
+
+; statusbar
+(def status
+  {:notification (JLabel. "hello")
+   :gridlock     (JLabel. "UNLOCKED")
+   :unsaved      (JLabel. " ") })
+
+(let [border (. BorderFactory createEtchedBorder)]
+  (doseq [[_ l] status]
+    (.setBorder l border)))
+
+; TODO: Fix padding!
+(def statusbar
+  (let [panel (miglayout (JPanel.) {:gap "0 0 0 0"}
+                         (status :notification) :push :growx {:pad "0 0 0 0"}
+                         (status :gridlock) {:pad "0 0 0 0"}
+                         (status :unsaved) {:pad "0 0 0 0"})
+        border (. BorderFactory createLoweredBevelBorder)]
+    (.setBorder panel border)
+    panel))
+
+(def ui
   (let [panel (miglayout (JPanel.) ; first argument to miglayout is the container
                          (JPanel.) {:id :gridpanel} :growy
                          (JScrollPane. words) {:id :wlist :width 200 :height height}
-                         :wrap
-                         (JLabel. " ") {:id :statusbar})
+                         statusbar :newline :span :growx)
         frame (JFrame. "Crossword Editor")
         ]
     { :frame frame :panel panel}))
 
-(def ui (xw-ui))
 (def mf (ui :frame))
 (def panel (ui :panel))
 (def gridpanel ((components panel) :gridpanel))
 (def wlist ((components panel) :wlist))
-(def status ((components panel) :statusbar))
 (def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
 (def update-wlist #(let [w (take 26 (words-with (current-word)))]
                      (. words setListData (to-array w))))
