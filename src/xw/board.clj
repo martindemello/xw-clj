@@ -1,9 +1,12 @@
 (ns xw.board
+  (:use (clojure.contrib
+          [duck-streams :only (spit slurp*)]))
   (:use xw.globals))
-
 
 (def board {})
 (def board-iter (for [j (range N) i (range N)] [i j]))
+
+(def state {:gridlock nil, :dirty nil})
 
 ; accessors
 (defn letter [i j] ((board [i j]) 0))
@@ -12,7 +15,10 @@
 (defn white? [i j] (not (black? i j)))
 (defn blank? [i j] (= (letter i j) :empty))
 (defn numbered? [i j] (not (= (number i j) nil)))
-(defn set-board [i j p] (def board (assoc board [i j] p)))
+(defn set-state [k v] (def state (assoc state k v)))
+(defn set-board [i j p]
+  (def board (assoc board [i j] p))
+  (set-state :dirty true))
 (defn set-letter [i j l] (set-board i j [l (number i j)]))
 (defn set-number [i j n] (set-board i j [(letter i j) n]))
 
@@ -65,4 +71,13 @@
 
 (defn new-board []
   (doseq [[i j] board-iter] (set-board i j [:empty nil]))
-  (renumber))
+  (renumber)
+  (set-state :dirty nil))
+
+(defn save-to-file [f]
+  (spit f (board-to-str))
+  (set-state :dirty nil))
+
+(defn load-from-file [f]
+  (read-board-from-str (slurp* f))
+  (set-state :dirty nil))

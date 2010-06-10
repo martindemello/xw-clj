@@ -11,11 +11,9 @@
                      InputEvent MouseAdapter)
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
-                    [duck-streams :only (spit slurp*)]
-                    [miglayout :only (miglayout components)]
-                    [swing-utils :only (add-key-typed-listener make-menubar make-action)]))
+          [miglayout :only (miglayout components)]
+          [swing-utils :only (add-key-typed-listener make-menubar make-action)]))
   (:use (xw globals board cursor wordlist)))
-
 
 ; -----------------------------------------
 ; Graphics
@@ -185,6 +183,10 @@
     (.setBorder panel border)
     panel))
 
+(defn update-status []
+  (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
+  (.setText (status :unsaved) (if (state :dirty) "*" " ")))
+
 (def ui
   (let [panel (miglayout (JPanel.) ; first argument to miglayout is the container
                          (JPanel.) {:id :gridpanel} :growy
@@ -212,6 +214,7 @@
                     (ctrl? e) (on-ctrl-key c)
                     (alt? e)   nil ; the menubar will handle this if necessary
                     true      (board-action c))
+                  (update-status)
                   (. gpanel repaint)))))
 
 (def mouse-listener
@@ -223,18 +226,20 @@
   (let [fc (JFileChooser.)]
     (when (= (.showSaveDialog fc mf) JFileChooser/APPROVE_OPTION)
       (let [f (.getSelectedFile fc)]
-        (println f)
-        (spit f (board-to-str))))))
+        (save-to-file f)
+        (update-status)))))
 
 (defn load-file-handler [_]
   (let [fc (JFileChooser.)]
     (when (= (.showOpenDialog fc mf) JFileChooser/APPROVE_OPTION)
       (let [f (.getSelectedFile fc)]
-        (read-board-from-str (slurp* f))
+        (load-from-file f)
+        (update-status)
         (. gpanel repaint)))))
 
 (defn new-file-handler [_]
   (new-board)
+  (update-status)
   (. gpanel repaint))
 
 (defn show-about [_] (print "world"))
