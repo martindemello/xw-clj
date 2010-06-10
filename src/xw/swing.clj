@@ -161,9 +161,11 @@
 ;; layout and widgets
 (def words (JList.))
 (defn xw-ui []
-  (let [panel (miglayout (JPanel.)
+  (let [panel (miglayout (JPanel.) ; first argument to miglayout is the container
                          (JPanel.) {:id :gridpanel} :growy
-                         (JScrollPane. words) {:id :wlist :width 200 :height height} )
+                         (JScrollPane. words) {:id :wlist :width 200 :height height}
+                         :wrap
+                         (JLabel. " ") {:id :statusbar})
         frame (JFrame. "Crossword Editor")
         ]
     { :frame frame :panel panel}))
@@ -173,6 +175,7 @@
 (def panel (ui :panel))
 (def gridpanel ((components panel) :gridpanel))
 (def wlist ((components panel) :wlist))
+(def status ((components panel) :statusbar))
 (def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
 (def update-wlist #(let [w (take 26 (words-with (current-word)))]
                      (. words setListData (to-array w))))
