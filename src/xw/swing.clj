@@ -138,7 +138,9 @@
 (defn modifier [e] (. e getModifiers))
 (defn modtext [e] (. KeyEvent getKeyModifiersText (modifier e)))
 (def CTRL (. InputEvent CTRL_MASK))
+(def ALT (. InputEvent ALT_MASK))
 (defn ctrl? [e] (= CTRL (bit-and (modifier e) CTRL)))
+(defn alt? [e] (= ALT (bit-and (modifier e) ALT)))
 
 (declare update-wlist)
 
@@ -188,7 +190,8 @@
                 (let [c (char-of e)]
                   (cond
                     (ctrl? e) (on-ctrl-key c)
-                    true (board-action c))
+                    (alt? e)   nil ; the menubar will handle this if necessary
+                    true      (board-action c))
                   (. gpanel repaint)))))
 
 (def mouse-listener
