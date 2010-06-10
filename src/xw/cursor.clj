@@ -1,7 +1,5 @@
-
 (ns xw.cursor
   (:use (xw globals board)))
-
  
 ;cursor movement
 (def current-x 0)
