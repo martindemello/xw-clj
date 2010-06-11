@@ -144,7 +144,8 @@
 
 (defn on-ctrl-key [c]
   (cond
-    (= c "R") (update-wlist)))
+    (= c "R") (update-wlist)
+    (= c "L") (set-state :gridlock (not (state :gridlock)))))
 
 (defn board-action [c]
   (cond

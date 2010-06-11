@@ -17,8 +17,9 @@
 (defn numbered? [i j] (not (= (number i j) nil)))
 (defn set-state [k v] (def state (assoc state k v)))
 (defn set-board [i j p]
-  (def board (assoc board [i j] p))
-  (set-state :dirty true))
+  (when (not (and (state :gridlock) (or (= (p 0) :black) (black? i j))))
+    (def board (assoc board [i j] p))
+    (set-state :dirty true)))
 (defn set-letter [i j l] (set-board i j [l (number i j)]))
 (defn set-number [i j n] (set-board i j [(letter i j) n]))
 
