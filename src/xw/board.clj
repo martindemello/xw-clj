@@ -59,15 +59,22 @@
     (= s "#") :black
     true s))
 
-(defn board-to-str []
-  (apply str (map cell-to-str board-iter)))
-
 (defn explode [s] (map str (seq s)))
+
+(defn join
+  ([xs]     (apply str xs))
+  ([sep xs] (join (interpose sep xs))))
+
+(defn join-lines [s] (map str (filter #(not (= % \newline)) s)))
+
+(defn board-to-str []
+  (let [rows (map join (partition N (map cell-to-str board-iter)))]
+    (join "\n" rows)))
 
 (defn fill-cell [[i j] c] (set-letter i j (str-to-cell c)))
 
 (defn read-board-from-str [s]
-  (dorun (map fill-cell board-iter (explode s)))
+  (dorun (map fill-cell board-iter (join-lines s)))
   (renumber))
 
 (defn new-board []
