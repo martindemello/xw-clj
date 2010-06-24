@@ -245,7 +245,7 @@
   (. gpanel repaint))
 
 (defn show-about [_]
-  (. JOptionPane showMessageDialog mf "Hello World")) ; "About Crossword Editor" JOptionPane/PLAIN_MESSAGE))
+  (. JOptionPane showMessageDialog mf "Hello World" "About Crossword Editor" JOptionPane/PLAIN_MESSAGE))
 
 (defn init-menu [frame]
   (let [menubar-spec
