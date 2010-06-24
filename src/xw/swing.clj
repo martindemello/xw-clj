@@ -16,6 +16,8 @@
           [swing-utils :only (add-key-typed-listener make-menubar make-action)]))
   (:use (xw globals board cursor wordlist)))
 
+(require '[clojure.contrib.str-utils2 :as s])
+
 ; -----------------------------------------
 ; Graphics
 ; -----------------------------------------
@@ -189,10 +191,21 @@
   (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
   (.setText (status :unsaved) (if (state :dirty) "*" " ")))
 
+(def cluebox
+  (let [word (JTextField. 15)
+        clue (JTextField. 40)
+        panel (miglayout (JPanel.)
+              word {:id :word}
+              clue {:id :clue} :growx)]
+    (.setEditable word false)
+    (.setEditable clue false)
+    panel))
+
 (def ui
   (let [panel (miglayout (JPanel.) ; first argument to miglayout is the container
                          (JPanel.) {:id :gridpanel} :growy
                          (JScrollPane. words) {:id :wlist :width 200 :height height}
+                         cluebox :newline :span :growx
                          statusbar :newline :span :growx)
         frame (JFrame. "Crossword Editor")
         ]
@@ -201,10 +214,22 @@
 (def mf (ui :frame))
 (def panel (ui :panel))
 (def gridpanel ((components panel) :gridpanel))
+(def clueword ((components cluebox) :word))
+(def clue ((components cluebox) :clue))
 (def wlist ((components panel) :wlist))
 (def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
+
 (def update-wlist #(let [w (take 26 (words-with (current-word)))]
                      (. words setListData (to-array w))))
+
+(defn update-clueword [word]
+  (if (and word (s/contains? word "."))
+    (do
+      (.setText clueword "")
+      (.setEditable clue false))
+    (do
+      (.setText clueword word)
+      (.setEditable clue true))))
 
 (defn exit [] (. System exit 0))
 
@@ -217,6 +242,7 @@
                     (alt? e)   nil ; the menubar will handle this if necessary
                     true      (board-action c))
                   (update-status)
+                  (update-clueword (current-word))
                   (. gpanel repaint)))))
 
 (def mouse-listener
