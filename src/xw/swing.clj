@@ -1,7 +1,8 @@
 (ns xw.swing
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
-                  JSeparator SwingUtilities JFileChooser BorderFactory)
+                  JOptionPane JDialog JSeparator SwingUtilities JFileChooser
+                  BorderFactory)
      (java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
                GridLayout BorderLayout FlowLayout Polygon)
      (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
@@ -243,7 +244,8 @@
   (update-status)
   (. gpanel repaint))
 
-(defn show-about [_] (print "world"))
+(defn show-about [_]
+  (. JOptionPane showMessageDialog mf "Hello World")) ; "About Crossword Editor" JOptionPane/PLAIN_MESSAGE))
 
 (defn init-menu [frame]
   (let [menubar-spec
