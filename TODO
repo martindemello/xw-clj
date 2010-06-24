@@ -2,7 +2,10 @@
 
 - Clues
   - Clue box in the UI
-	- Single-user-db
+	- Single-user embedded db (ideally single file too)
+	  - See http://stackoverflow.com/questions/1160437/java-embedded-database-w-ability-to-store-as-one-file
 
 - Grid library
   - gallery widget
+
+- Stop hardcoding grid size!!!
