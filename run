@@ -1,1 +1,3 @@
+#!/bin/sh -eu
+cd $(dirname `readlink -f $0`)
 ./clj src/xw/run.clj
