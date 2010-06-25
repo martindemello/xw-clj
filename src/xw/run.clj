@@ -14,3 +14,5 @@
 (defn -main []
   (new-board)
   (init-gui))
+
+(-main)
