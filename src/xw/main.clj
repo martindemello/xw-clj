@@ -3,6 +3,7 @@
   (:use xw.globals)
   (:use xw.wordlist)
   (:use xw.board)
+  (:use xw.clues)
   (:use xw.cursor)
   (:use xw.swing))
                                         

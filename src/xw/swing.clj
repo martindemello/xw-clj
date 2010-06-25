@@ -13,8 +13,10 @@
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
-          [swing-utils :only (add-key-typed-listener make-menubar make-action)]))
-  (:use (xw globals board cursor wordlist)))
+          [swing-utils :only (add-key-typed-listener add-action-listener
+                                                     make-menubar
+                                                     make-action)]))
+  (:use (xw globals board cursor wordlist clues)))
 
 (require '[clojure.contrib.str-utils2 :as s])
 
@@ -32,6 +34,7 @@
 (def ared   (new Color 255 0 0 192))
 (def ablue  (new Color 0 0 255 192))
 (def agreen (new Color 0 128 0 64))
+(def pale-yellow (new Color 255 255 192 192))
 
 ; coordinate manipulations
 (defn add2 [u v] [(+ (u 0) (v 0)) (+ (u 1) (v 1))])
@@ -219,6 +222,11 @@
 (def wlist ((components panel) :wlist))
 (def gpanel  (proxy [JPanel] [] (paint [g] (render g))))
 
+(add-action-listener clue
+                     (fn [_]
+                       (add-clue (.getText clueword) (.getText clue))
+                       (.setBackground clue pale-yellow)))
+
 (def update-wlist #(let [w (take 26 (words-with (current-word)))]
                      (. words setListData (to-array w))))
 
@@ -226,9 +234,11 @@
   (if (and word (s/contains? word "."))
     (do
       (.setText clueword "")
+      (.setText clue "")
       (.setEditable clue false))
     (do
       (.setText clueword word)
+      (.setText clue (clue-for word))
       (.setEditable clue true))))
 
 (defn exit [] (. System exit 0))
