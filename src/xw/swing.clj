@@ -5,12 +5,12 @@
                   BorderFactory)
      (javax.swing.event DocumentListener)
      (java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
-               GridLayout BorderLayout FlowLayout Polygon)
+               GridLayout BorderLayout FlowLayout Polygon KeyboardFocusManager)
      (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
                     Line2D PathIterator Point2D)
      (java.awt.image BufferedImage)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
-                     InputEvent MouseAdapter)
+                     InputEvent MouseAdapter FocusListener FocusAdapter)
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
@@ -118,6 +118,8 @@
     (black-square bg x y)
     (white-square bg x y)))
 
+(def gridpanel-focused? true)
+
 (defn render [g]
   (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
         bg (. img getGraphics)]
@@ -125,10 +127,10 @@
     (doseq [[i j] board-iter]
       (square bg i j))
 
-    (draw-cursor bg current-x current-y)
-
-    (doseq [[x y] (symm current-x current-y)]
-      (fill-square bg x y agreen))
+    (when gridpanel-focused?
+      (draw-cursor bg current-x current-y)
+      (doseq [[x y] (symm current-x current-y)]
+        (fill-square bg x y agreen)))
 
     (. bg (setColor (. Color black)))
     (doseq [i (range 0 (+ n scale) scale)]
@@ -251,7 +253,7 @@
 
 (defn exit [] (. System exit 0))
 
-(def key-listener
+(def grid-key-listener
   (proxy [KeyAdapter] []
     (keyPressed [e]
                 (let [c (char-of e)]
@@ -261,12 +263,25 @@
                     true      (board-action c))
                   (update-status)
                   (update-clueword (current-word))
-                  (. gpanel repaint)))))
+                  (.repaint gpanel)))))
 
-(def mouse-listener
+(def grid-mouse-listener
   (proxy [MouseAdapter] []
      (mouseClicked [e]
-                   (. mf requestFocus))))
+                   (. gpanel requestFocus))))
+
+(def grid-focus-listener
+  (proxy [FocusAdapter] []
+    (focusGained [e]
+                 (def gridpanel-focused? true)
+                 (set-state :notification "gained focus!")
+                 (update-status)
+                 (.repaint gpanel))
+    (focusLost [e]
+               (def gridpanel-focused? false)
+               (set-state :notification "lost focus!")
+               (update-status)
+               (.repaint gpanel))))
 
 (defn save-file-handler [_]
   (let [fc (JFileChooser.)]
@@ -281,12 +296,12 @@
       (let [f (.getSelectedFile fc)]
         (load-from-file f)
         (update-status)
-        (. gpanel repaint)))))
+        (.repaint gpanel)))))
 
 (defn new-file-handler [_]
   (new-board)
   (update-status)
-  (. gpanel repaint))
+  (.repaint gpanel))
 
 (defn show-about [_]
   (. JOptionPane showMessageDialog mf "Hello World" "About Crossword Editor" JOptionPane/PLAIN_MESSAGE))
@@ -350,11 +365,13 @@
   (doto mf
     (.addWindowListener
       (proxy [WindowAdapter] [] (windowClosing [e] (exit))))
-    (.setFocusable 'true)
-    (.addKeyListener key-listener)
-    (.addMouseListener mouse-listener)
     (.pack)
     (.show))
 
-  (. mf requestFocus)
+  (doto gpanel
+    (.setFocusable true)
+    (.addKeyListener grid-key-listener)
+    (.addMouseListener grid-mouse-listener)
+    (.addFocusListener grid-focus-listener)
+    (.requestFocus))
   )
