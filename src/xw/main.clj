@@ -1,11 +1,7 @@
 (ns xw.main
   (:gen-class)
-  (:use xw.globals)
-  (:use xw.wordlist)
   (:use xw.board)
-  (:use xw.clues)
-  (:use xw.cursor)
-  (:use xw.swing))
+  (:use xw.swing.ui))
                                         
 ; -----------------------------------------
 ; main
