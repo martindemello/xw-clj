@@ -3,6 +3,7 @@
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
                   JOptionPane JDialog JSeparator SwingUtilities JFileChooser
                   BorderFactory)
+     (javax.swing.event DocumentListener)
      (java.awt BasicStroke Color Dimension Graphics Font Graphics2D RenderingHints
                GridLayout BorderLayout FlowLayout Polygon)
      (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
@@ -226,6 +227,13 @@
                      (fn [_]
                        (add-clue (.getText clueword) (.getText clue))
                        (.setBackground clue pale-yellow)))
+
+(.. clue getDocument
+  (addDocumentListener
+    (proxy [DocumentListener] []
+      (insertUpdate  [e] (.setBackground clue (. Color white)))
+      (removeUpdate  [e] (.setBackground clue (. Color white)))
+      (changedUpdate [e] (.setBackground clue (. Color white))))))
 
 (def update-wlist #(let [w (take 26 (words-with (current-word)))]
                      (. words setListData (to-array w))))
