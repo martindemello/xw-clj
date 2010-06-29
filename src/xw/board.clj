@@ -2,10 +2,15 @@
   (:use (clojure.contrib
           [duck-streams :only (spit slurp*)])))
 
-(def N 15)
+(def N)
+(def board)
+(def board-iter)
 
-(def board {})
-(def board-iter (for [j (range N) i (range N)] [i j]))
+(defn resize-board [n]
+  (def N n)
+
+  (def board {})
+  (def board-iter (for [j (range N) i (range N)] [i j])))
 
 (def state {:gridlock nil, :dirty nil})
 
@@ -78,7 +83,8 @@
   (dorun (map fill-cell board-iter (join-lines s)))
   (renumber))
 
-(defn new-board []
+(defn new-board [n]
+  (resize-board n)
   (doseq [[i j] board-iter] (set-board i j [:empty nil]))
   (renumber)
   (set-state :dirty nil))

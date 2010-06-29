@@ -9,5 +9,5 @@
 ;; Populate the board with empty cells
 
 (defn -main []
-  (new-board)
-  (init-gui))
+  (new-board 15)
+  (init-gui 30))

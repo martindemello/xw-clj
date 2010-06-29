@@ -70,13 +70,14 @@
   (let [panel (miglayout
                 (JPanel.)
                 (JPanel.) {:id :gridpanel} :growy
-                (JScrollPane. words) {:id :wlist :width 200 :height height}
+                (JScrollPane. words) {:id :wlist :width 200 :height 450}
                 cluebox :newline :span :growx
                 statusbar :newline :span :growx)
         frame (JFrame. "Crossword Editor")
         ]
     { :frame frame :panel panel}))
 
+(def grid) ; forward declaration
 (def mf (ui :frame))
 (def mainpanel (ui :panel))
 (def gridpanel ((components mainpanel) :gridpanel))
@@ -96,8 +97,6 @@
       (ctrl? e) (on-ctrl-key c))
     (update-status)
     (update-clueword (current-word))))
-
-(def grid (make-grid extended-grid-keyhandler))
 
 (add-action-listener clue
                      (fn [_]
@@ -143,8 +142,9 @@
         (update-status)
         (.repaint grid)))))
 
-(defn new-file-handler [_]
-  (new-board)
+(defn new-file-handler [n]
+  (new-board n)
+  (resize-grid scale)
   (update-status)
   (.repaint grid))
 
@@ -160,7 +160,7 @@
             :mnemonic   KeyEvent/VK_N
             :short-desc "New crossword"
             :long-desc  "Start a new crossword"
-            :handler    new-file-handler}
+            :handler    (fn [_] (new-file-handler 15))}
            {:name       "Open"
             :mnemonic   KeyEvent/VK_O
             :short-desc "Open crossword"
@@ -186,7 +186,7 @@
       (.pack)
       (.setVisible true))))
 
-(defn init-gui []
+(defn init-gui [sc]
   (doto mf
     (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
     (.add mainpanel)
@@ -197,6 +197,8 @@
 
   (doto wlist
     (.add words))
+
+  (def grid (make-grid sc extended-grid-keyhandler))
 
   (doto gridpanel
     (.setLayout (new BorderLayout))

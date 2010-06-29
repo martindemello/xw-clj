@@ -9,12 +9,32 @@
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter FocusListener FocusAdapter)
      (java.awt.font TextLayout FontRenderContext))
-  (:use (xw board cursor)))
+  (:use (xw board cursor graphics)))
 
-(def scale 30)
-(def n (* N scale))
-(def height (+ n 5))
-(def width (+ n 5))
+(def scale)
+(def n)
+(def height)
+(def width)
+(def arrow)
+(def downarrow)
+
+(def gridpanel-focused? true)
+
+(defn resize-grid [sc]
+  (def scale sc)
+  (def n (* N scale))
+  (def height (+ n 5))
+  (def width (+ n 5))
+
+  (def arrow
+    (let [f (- scale 2) ; full, half, one-third, two-thirds
+          h (/ f 2)
+          o (/ f 3)
+          t (/ (* f 2) 3)]
+      [[h 0] [f h] [h f] [h t] [0 t] [0 o] [h o] [h 0]]))
+
+  (def downarrow (map rot-90 arrow)))
+
 (def letter-font (new Font "Arial" (. Font PLAIN) 18))
 (def number-font (new Font "Serif" (. Font PLAIN) 9))
 (def text-color (. Color black))
@@ -43,11 +63,6 @@
     (= c "Right") (move-right)
     (= c "Left")  (move-left)
     (= c "Enter") (flip-dir)))
-
-; coordinate manipulations
-(defn add2 [u v] [(+ (u 0) (v 0)) (+ (u 1) (v 1))])
-(defn rot-90 ([[i j]] [(- j) i]))
-(defn translate [poly x0 y0] (map #(add2 [x0 y0] %) poly))
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
@@ -85,15 +100,6 @@
              (.setColor color)
              (.drawRect (+ i 1) (+ j 1) (- scale 2) (- scale 2))))
 
-(def arrow
-  (let [f (- scale 2) ; full, half, one-third, two-thirds
-        h (/ f 2)
-        o (/ f 3)
-        t (/ (* f 2) 3)]
-    [[h 0] [f h] [h f] [h t] [0 t] [0 o] [h o] [h 0]]))
-
-(def downarrow (map rot-90 arrow))
-
 (defn add-poly [bg poly col]
   (let [po (new Polygon)]
     (doseq [[i j] poly] (. po addPoint i j))
@@ -125,8 +131,6 @@
     (black-square bg x y)
     (white-square bg x y)))
 
-(def gridpanel-focused? true)
-
 (defn render [g]
   (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
         bg (. img getGraphics)]
@@ -147,7 +151,8 @@
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
 
-(defn make-grid [on-key] ; chainable keyboard handler
+(defn make-grid [scale on-key] ; chainable keyboard handler
+  (resize-grid scale)
   (let [gpanel  (proxy [JPanel] [] (paint [g] (render g)))]
     (doto gpanel
       (.setFocusable true)
