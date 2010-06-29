@@ -5,10 +5,10 @@
 (def N)
 (def board)
 (def board-iter)
+(declare new-board)
 
 (defn resize-board [n]
   (def N n)
-
   (def board {})
   (def board-iter (for [j (range N) i (range N)] [i j])))
 
@@ -79,9 +79,17 @@
 
 (defn fill-cell [[i j] c] (set-letter i j (str-to-cell c)))
 
+; TODO: better error-handling for invalid savefiles
 (defn read-board-from-str [s]
-  (dorun (map fill-cell board-iter (join-lines s)))
-  (renumber))
+  (let [size (.indexOf s "\n")]
+    (if (and (> size 2) (< size 16))
+      (do
+        (prn "resizing" size)
+        (new-board size)
+        (dorun (map fill-cell board-iter (join-lines s)))
+        (renumber)
+        true)
+      false)))
 
 (defn new-board [n]
   (resize-board n)
@@ -94,5 +102,7 @@
   (set-state :dirty nil))
 
 (defn load-from-file [f]
-  (read-board-from-str (slurp* f))
-  (set-state :dirty nil))
+  (let [ret (read-board-from-str (slurp* f))]
+    (when ret
+      (set-state :dirty nil))
+    ret))

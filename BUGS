@@ -1,0 +1,1 @@
+* When loading a crossword smaller than the current grid, the grid doesn't repaint properly

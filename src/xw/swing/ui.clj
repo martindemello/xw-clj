@@ -140,7 +140,12 @@
   (let [fc (JFileChooser.)]
     (when (= (.showOpenDialog fc mf) JFileChooser/APPROVE_OPTION)
       (let [f (.getSelectedFile fc)]
-        (load-from-file f)
+        (if (load-from-file f)
+          (do
+            (resize-grid scale)
+            (goto-origin)
+            (init-status))
+          (. JOptionPane showMessageDialog mf "Could not load file" "Error" JOptionPane/ERROR_MESSAGE))
         (update-statusbar)
         (.repaint grid)))))
 
