@@ -2,9 +2,11 @@
   (:use (xw board)))
  
 ;cursor movement
-(def current-x 0)
-(def current-y 0)
-(def current-dir :across)
+(defn goto-origin []
+  (def current-x 0)
+  (def current-y 0)
+  (def current-dir :across))
+(goto-origin)
 (defn across? [] (= current-dir :across))
 (defn inc-pos [i] (rem (+ i 1) N))
 (defn dec-pos [i] (if (= i 0) (- N 1) (- i 1)))

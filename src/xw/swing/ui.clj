@@ -19,7 +19,7 @@
 (require '[clojure.contrib.str-utils2 :as s])
 
 (declare update-wlist)
-(declare update-status)
+(declare update-statusbar)
 (declare update-clueword)
 
 ;;; -----------------------------------------
@@ -32,10 +32,13 @@
 (def words (JList.))
 
 ; statusbar
-(def status
-  {:notification (JLabel. "hello")
-   :gridlock     (JLabel. "UNLOCKED")
-   :unsaved      (JLabel. " ") })
+(defn init-status []
+  (def status
+    {:notification (JLabel. "Crossword Constructor")
+     :gridlock     (JLabel. "UNLOCKED")
+     :unsaved      (JLabel. " ") }))
+
+(init-status)
 
 (let [border (. BorderFactory createEtchedBorder)]
   (doseq [[_ l] status]
@@ -52,7 +55,7 @@
     (.setBorder panel border)
     panel))
 
-(defn update-status []
+(defn update-statusbar []
   (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
   (.setText (status :unsaved) (if (state :dirty) "*" " ")))
 
@@ -95,7 +98,7 @@
   (let [c (char-of e)]
     (cond
       (ctrl? e) (on-ctrl-key c))
-    (update-status)
+    (update-statusbar)
     (update-clueword (current-word))))
 
 (add-action-listener clue
@@ -126,26 +129,27 @@
 
 (defn exit [] (. System exit 0))
 
-
 (defn save-file-handler [_]
   (let [fc (JFileChooser.)]
     (when (= (.showSaveDialog fc mf) JFileChooser/APPROVE_OPTION)
       (let [f (.getSelectedFile fc)]
         (save-to-file f)
-        (update-status)))))
+        (update-statusbar)))))
 
 (defn load-file-handler [_]
   (let [fc (JFileChooser.)]
     (when (= (.showOpenDialog fc mf) JFileChooser/APPROVE_OPTION)
       (let [f (.getSelectedFile fc)]
         (load-from-file f)
-        (update-status)
+        (update-statusbar)
         (.repaint grid)))))
 
 (defn new-file-handler [n]
   (new-board n)
   (resize-grid scale)
-  (update-status)
+  (goto-origin)
+  (init-status)
+  (update-statusbar)
   (.repaint grid))
 
 (defn show-about [_]
@@ -158,9 +162,10 @@
           :items
           [{:name       "New"
             :mnemonic   KeyEvent/VK_N
-            :short-desc "New crossword"
-            :long-desc  "Start a new crossword"
-            :handler    (fn [_] (new-file-handler 15))}
+            :items
+            [{:name "11x11" :handler (fn [_] (new-file-handler 11))}
+             {:name "13x13" :handler (fn [_] (new-file-handler 13))}
+             {:name "15x15" :handler (fn [_] (new-file-handler 15))}]}
            {:name       "Open"
             :mnemonic   KeyEvent/VK_O
             :short-desc "Open crossword"
