@@ -1,5 +1,5 @@
 (ns xw.cursor
-  (:use (xw globals board)))
+  (:use (xw board)))
  
 ;cursor movement
 (def current-x 0)
@@ -17,7 +17,9 @@
 (defn flip-dir [] (def current-dir (if (across?) :down :across)))
 
 ; do something in current square
-(defn symm [i j] [ [i j] [j (- M i)] [(- M i) (- M j)] [(- M j) i] ])
+(defn symm [i j]
+  (let [M (- N 1)]
+    [ [i j], [j (- M i)], [(- M i) (- M j)], [(- M j) i] ]))
 
 ;; symmetrically add or remove a black square
 (defn place-symm [blk]
@@ -37,7 +39,8 @@
       true l)))
 
 (defn word-boundary? [i j]
-  (or (black? i j) (< i 0) (< j 0) (> i M) (> j M)))
+  (let [M (- N 1)]
+    (or (black? i j) (< i 0) (< j 0) (> i M) (> j M))))
 
 (defn in-word? [i j]
   (not (word-boundary? i j)))

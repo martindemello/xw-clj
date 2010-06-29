@@ -1,7 +1,8 @@
 (ns xw.board
   (:use (clojure.contrib
-          [duck-streams :only (spit slurp*)]))
-  (:use xw.globals))
+          [duck-streams :only (spit slurp*)])))
+
+(def N 15)
 
 (def board {})
 (def board-iter (for [j (range N) i (range N)] [i j]))
@@ -28,13 +29,13 @@
   (and
     (white? i j)
     (or (= i 0) (black? (- i 1) j))
-    (and (< i M) (white? (+ i 1) j))))
+    (and (< i (- N 1)) (white? (+ i 1) j))))
 
 (defn start-down? [i j]
   (and
     (white? i j)
     (or (= j 0) (black? i (- j 1)))
-    (and (< j M) (white? i (+ j 1)))))
+    (and (< j (- N 1)) (white? i (+ j 1)))))
 
 (defn start-sqr? [i j]
   (or (start-across? i j) (start-down? i j)))

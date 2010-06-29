@@ -9,7 +9,7 @@
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter FocusListener FocusAdapter)
      (java.awt.font TextLayout FontRenderContext))
-  (:use (xw globals board cursor)))
+  (:use (xw board cursor)))
 
 (def scale 30)
 (def n (* N scale))

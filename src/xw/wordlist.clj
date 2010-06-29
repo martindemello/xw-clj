@@ -1,5 +1,4 @@
-(ns xw.wordlist
-  (:use xw.globals))
+(ns xw.wordlist)
 
 (require '[clojure.contrib.str-utils2 :as s])
 
