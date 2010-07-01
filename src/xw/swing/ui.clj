@@ -28,6 +28,20 @@
 
 ;; layout and widgets
 
+; forward declarations
+(def statusbar)
+(def ui)
+(def cluebox)
+(def grid)
+(def mf)
+(def mainpanel)
+(def gridpanel)
+(def clueword)
+(def clue)
+(def wlist)
+(def extended-grid-keyhandler)
+
+
 ; list of possible words
 (def words (JList.))
 
@@ -44,49 +58,62 @@
   (doseq [[_ l] status]
     (.setBorder l border)))
 
-; TODO: Fix padding!
-(def statusbar
-  (let [panel (miglayout
-                (JPanel.) {:gap "0 0 0 0"}
-                (status :notification) :push :growx {:pad "0 0 0 0"}
-                (status :gridlock) {:pad "0 0 0 0"}
-                (status :unsaved) {:pad "0 0 0 0"})
-        border (. BorderFactory createLoweredBevelBorder)]
-    (.setBorder panel border)
-    panel))
+(defn make-widgets [scale]
+  ; TODO: Fix padding!
+  (def statusbar
+    (let [panel (miglayout
+                  (JPanel.) {:gap "0 0 0 0"}
+                  (status :notification) :push :growx {:pad "0 0 0 0"}
+                  (status :gridlock) {:pad "0 0 0 0"}
+                  (status :unsaved) {:pad "0 0 0 0"})
+          border (. BorderFactory createLoweredBevelBorder)]
+      (.setBorder panel border)
+      panel))
 
-(defn update-statusbar []
-  (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
-  (.setText (status :unsaved) (if (state :dirty) "*" " ")))
+  (def cluebox
+    (let [word (JTextField. 15)
+          clue (JTextField. 40)
+          panel (miglayout (JPanel.)
+                           word {:id :word}
+                           clue {:id :clue} :growx)]
+      (.setEditable word false)
+      (.setEditable clue false)
+      panel))
 
-(def cluebox
-  (let [word (JTextField. 15)
-        clue (JTextField. 40)
-        panel (miglayout (JPanel.)
-              word {:id :word}
-              clue {:id :clue} :growx)]
-    (.setEditable word false)
-    (.setEditable clue false)
-    panel))
+  (def ui
+    (let [panel (miglayout
+                  (JPanel.)
+                  (JPanel.) {:id :gridpanel} :growy
+                  (JScrollPane. words) {:id :wlist :width 200 :height 450}
+                  cluebox :newline :span :growx
+                  statusbar :newline :span :growx)
+          frame (JFrame. "Crossword Editor")
+          ]
+      { :frame frame :panel panel}))
 
-(def ui
-  (let [panel (miglayout
-                (JPanel.)
-                (JPanel.) {:id :gridpanel} :growy
-                (JScrollPane. words) {:id :wlist :width 200 :height 450}
-                cluebox :newline :span :growx
-                statusbar :newline :span :growx)
-        frame (JFrame. "Crossword Editor")
-        ]
-    { :frame frame :panel panel}))
+  (def mf (ui :frame))
+  (def mainpanel (ui :panel))
+  (def gridpanel ((components mainpanel) :gridpanel))
+  (def clueword ((components cluebox) :word))
+  (def clue ((components cluebox) :clue))
+  (def wlist ((components mainpanel) :wlist))
 
-(def grid) ; forward declaration
-(def mf (ui :frame))
-(def mainpanel (ui :panel))
-(def gridpanel ((components mainpanel) :gridpanel))
-(def clueword ((components cluebox) :word))
-(def clue ((components cluebox) :clue))
-(def wlist ((components mainpanel) :wlist))
+  (def grid (make-grid scale extended-grid-keyhandler))
+
+  ; the cluebox should track whether the current clue has been saved
+  ; set bgcolor to pale yellow for saved and white for dirty
+  (add-action-listener
+    clue
+    (fn [_]
+      (add-clue (.getText clueword) (.getText clue))
+      (.setBackground clue pale-yellow)))
+
+  (.. clue getDocument
+    (addDocumentListener
+      (proxy [DocumentListener] []
+        (insertUpdate  [e] (.setBackground clue (. Color white)))
+        (removeUpdate  [e] (.setBackground clue (. Color white)))
+        (changedUpdate [e] (.setBackground clue (. Color white)))))))
 
 ; keyboard handler chained from grid keyboard handler
 (defn on-ctrl-key [c]
@@ -101,17 +128,10 @@
     (update-statusbar)
     (update-clueword (current-word))))
 
-(add-action-listener clue
-                     (fn [_]
-                       (add-clue (.getText clueword) (.getText clue))
-                       (.setBackground clue pale-yellow)))
-
-(.. clue getDocument
-  (addDocumentListener
-    (proxy [DocumentListener] []
-      (insertUpdate  [e] (.setBackground clue (. Color white)))
-      (removeUpdate  [e] (.setBackground clue (. Color white)))
-      (changedUpdate [e] (.setBackground clue (. Color white))))))
+; update widgets
+(defn update-statusbar []
+  (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
+  (.setText (status :unsaved) (if (state :dirty) "*" " ")))
 
 (def update-wlist #(let [w (take 26 (words-with (current-word)))]
                      (. words setListData (to-array w))))
@@ -197,6 +217,8 @@
       (.setVisible true))))
 
 (defn init-gui [sc]
+  (make-widgets sc)
+
   (doto mf
     (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
     (.add mainpanel)
@@ -207,8 +229,6 @@
 
   (doto wlist
     (.add words))
-
-  (def grid (make-grid sc extended-grid-keyhandler))
 
   (doto gridpanel
     (.setLayout (new BorderLayout))
