@@ -1,4 +1,5 @@
-(ns xw.wordlist)
+(ns xw.wordlist
+  (:use [xw trie]))
 
 (require '[clojure.contrib.str-utils2 :as s])
 
@@ -6,9 +7,9 @@
 ; Wordlist
 ; -----------------------------------------
 
-(def wordlist (s/split (slurp "csw.txt") #"\n"))
+(defn read-wordlist [filename] (s/split (slurp filename) #"\n"))
 
-(defn words-with [re]
-  (if re
-    (filter #(re-matches (re-pattern re) %) wordlist)
-    '()))
+(def trie (build-trie (read-wordlist "csw.txt")))
+
+(defn words-with [patt]
+  (pattern trie patt))
