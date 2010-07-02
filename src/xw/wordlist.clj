@@ -9,7 +9,7 @@
 
 (defn read-wordlist [filename] (s/split (slurp filename) #"\n"))
 
-(def trie (build-trie (read-wordlist "csw.txt")))
+(def dict (build-dict (read-wordlist "csw.txt")))
 
 (defn words-with [patt]
-  (pattern trie patt))
+  (pattern dict patt))
