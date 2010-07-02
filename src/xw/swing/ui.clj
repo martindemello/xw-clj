@@ -3,7 +3,7 @@
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
                   JOptionPane JDialog JSeparator SwingUtilities JFileChooser
                   BorderFactory)
-     (javax.swing.event DocumentListener)
+     (javax.swing.event DocumentListener ListSelectionListener)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter FocusListener FocusAdapter)
@@ -99,6 +99,15 @@
   (def wlist ((components mainpanel) :wlist))
 
   (def grid (make-grid scale extended-grid-keyhandler))
+
+  ; the wordlist should fill the current word in when selected
+  (.. words getSelectionModel
+   (addListSelectionListener
+     (proxy [ListSelectionListener] []
+       (valueChanged [e]
+                     (let [w (first (.getSelectedValues words))]
+                       (set-current-word w)
+                       (.repaint grid))))))
 
   ; the cluebox should track whether the current clue has been saved
   ; set bgcolor to pale yellow for saved and white for dirty

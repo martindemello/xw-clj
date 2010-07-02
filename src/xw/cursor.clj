@@ -75,3 +75,8 @@
 
 (defn current-word []
   (apply str (map #(apply re-char %) (current-word-squares))))
+
+(defn set-current-word [w]
+  (doseq [[i j l] (map conj (current-word-squares) w)]
+    (set-letter i j (str l))))
+
