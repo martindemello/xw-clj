@@ -44,6 +44,7 @@
 
 ; list of possible words
 (def words (JList.))
+(def wordlist-pattern "")
 
 ; statusbar
 (defn init-status []
@@ -106,8 +107,16 @@
      (proxy [ListSelectionListener] []
        (valueChanged [e]
                      (let [w (first (.getSelectedValues words))]
-                       (set-current-word w)
-                       (.repaint grid))))))
+                       (when (= (current-word) wordlist-pattern)
+                         (set-current-word w)
+                         (.repaint grid)))))))
+
+  ; and force an update when focused, to prevent filling in inconsistent values
+  ; into the grid
+  (.addFocusListener
+    words
+    (proxy [FocusAdapter] []
+      (focusGained [e] (update-wlist))))
 
   ; the cluebox should track whether the current clue has been saved
   ; set bgcolor to pale yellow for saved and white for dirty
@@ -142,8 +151,12 @@
   (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
   (.setText (status :unsaved) (if (state :dirty) "*" " ")))
 
-(def update-wlist #(let [w (take 26 (words-with (current-word)))]
-                     (. words setListData (to-array w))))
+(defn update-wlist []
+  (let [cw (current-word)]
+  (when (not (= cw wordlist-pattern))
+    (def wordlist-pattern cw)
+    (let [w (take 26 (words-with cw))]
+      (. words setListData (to-array w))))))
 
 (defn update-clueword [word]
   (if (and word (s/contains? word "."))
