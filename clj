@@ -4,9 +4,7 @@ WD=`pwd`
 CLASSPATH="$WD/lib/clojure.jar:$WD/lib/*:$WD/classes/*:$WD/src"   # update for your env
 
 if [ $# -eq 0 ] ; then
-    JLINE="$WD/jline-0.9.9.jar"  # safe to comment out or leave empty
-    [ -n "$JLINE" ] && CLASSPATH="$JLINE":$CLASSPATH
-    exec java -cp "$CLASSPATH" jline.ConsoleRunner clojure.main --repl
+    exec rlwrap java -cp "$CLASSPATH" clojure.main --repl
 else
     while [ $# -gt 0 ] ; do
         case "$1" in
