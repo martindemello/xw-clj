@@ -52,24 +52,26 @@
   (not (word-boundary? i j)))
 
 (defn collect-ac [s j]
-  (apply str (map #(re-char % j) (take-while #(in-word? % j) s))))
+  (map (fn [k] [k j]) (take-while #(in-word? % j) s)))
 
 (defn collect-dn [i s]
-  (apply str (map #(re-char i %) (take-while #(in-word? i %) s))))
+  (map (fn [k] [i k]) (take-while #(in-word? i %) s)))
 
 (defn ac-word [i j]
   (let [l (reverse (range 0 i))
         r (range i N)]
-    (apply str (concat (reverse (collect-ac l j)) (collect-ac r j)))))
+    (concat (reverse (collect-ac l j)) (collect-ac r j))))
 
 (defn dn-word [i j]
   (let [u (reverse (range 0 j))
         d (range j N)]
-    (apply str (concat (reverse (collect-dn i u)) (collect-dn i d)))))
+    (concat (reverse (collect-dn i u)) (collect-dn i d))))
 
-(defn current-word []
+(defn current-word-squares []
   (cond
     (black? current-x current-y) nil
     (across?) (ac-word current-x current-y)
     true (dn-word current-x current-y)))
 
+(defn current-word []
+  (apply str (map #(apply re-char %) (current-word-squares))))

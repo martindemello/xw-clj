@@ -42,6 +42,7 @@
 (def ablue  (new Color 0 0 255 192))
 (def agreen (new Color 0 128 0 64))
 (def pale-yellow (new Color 255 255 192 192))
+(def pale-blue (new Color 192 192 255 192))
 
 ;; keyboard handling
 (defn char-of [e] (. KeyEvent getKeyText (. e getKeyCode)))
@@ -138,10 +139,14 @@
     (doseq [[i j] board-iter]
       (square bg i j))
 
-    (when gridpanel-focused?
-      (draw-cursor bg current-x current-y)
-      (doseq [[x y] (symm current-x current-y)]
-        (fill-square bg x y agreen)))
+    (if gridpanel-focused?
+      (do
+        (draw-cursor bg current-x current-y)
+        (doseq [[x y] (symm current-x current-y)]
+          (fill-square bg x y agreen)))
+      (do
+        (doseq [[x y] (current-word-squares)]
+          (fill-square bg x y pale-blue))))
 
     (. bg (setColor (. Color black)))
     (doseq [i (range 0 (+ n scale) scale)]
