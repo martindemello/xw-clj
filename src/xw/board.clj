@@ -5,12 +5,7 @@
 (def N)
 (def board)
 (def board-iter)
-(declare new-board)
-
-(defn resize-board [n]
-  (def N n)
-  (def board {})
-  (def board-iter (for [j (range N) i (range N)] [i j])))
+(declare init-board)
 
 (def state {:gridlock nil, :dirty nil})
 
@@ -84,18 +79,21 @@
   (let [size (.indexOf s "\n")]
     (if (and (> size 2) (< size 16))
       (do
-        (prn "resizing" size)
-        (new-board size)
+        (init-board size)
         (dorun (map fill-cell board-iter (join-lines s)))
         (renumber)
         true)
       false)))
 
 (defn new-board [n]
-  (resize-board n)
-  (doseq [[i j] board-iter] (set-board i j [:empty nil]))
-  (renumber)
-  (set-state :dirty nil))
+  (reduce #(assoc %1 %2 [:empty nil]) {} (for [j (range n) i (range n)] [i j])))
+
+(defn init-board [n]
+  (def board (new-board n))
+  (def N n)
+  (def board-iter (for [j (range N) i (range N)] [i j]))
+  (def state {:gridlock nil, :dirty nil})
+  (renumber))
 
 (defn save-to-file [f]
   (spit f (board-to-str))

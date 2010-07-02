@@ -192,7 +192,7 @@
         (.repaint grid)))))
 
 (defn new-file-handler [n]
-  (new-board n)
+  (init-board n)
   (resize-grid scale)
   (goto-origin)
   (init-status)
