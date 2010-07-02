@@ -16,6 +16,10 @@
 (defn move-left  [] (def current-x (dec-pos current-x)))
 (defn move-forward [] (if (across?) (move-right) (move-down)))
 (defn move-back [] (if (across?) (move-left) (move-up)))
+(defn move-to [x y]
+  (def current-x x)
+  (def current-y y))
+
 (defn flip-dir [] (def current-dir (if (across?) :down :across)))
 
 ; do something in current square

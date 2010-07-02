@@ -172,7 +172,12 @@
 
       (.addMouseListener
         (proxy [MouseAdapter] []
-          (mouseClicked [e] (. gpanel requestFocus))))
+          (mouseClicked [e]
+                        (if (not gridpanel-focused?) (. gpanel requestFocus)
+                          (let [x (.getX e)
+                                y (.getY e)]
+                            (move-to (int (/ x scale)) (int (/ y scale)))
+                            (.repaint gpanel))))))
 
       (.addFocusListener
         (proxy [FocusAdapter] []
