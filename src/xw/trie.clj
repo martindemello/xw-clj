@@ -1,8 +1,7 @@
 ; thanks to Greg Fodor for the basic idea
 ; http://stackoverflow.com/questions/1452680/clojure-how-to-generate-a-trie
 
-(ns xw.trie
-  (:use (clojure.contrib [seq-utils :only (flatten)])))
+(ns xw.trie)
 
 (require '[clojure.contrib.str-utils2 :as s])
 

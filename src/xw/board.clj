@@ -1,6 +1,6 @@
 (ns xw.board
   (:use (clojure.contrib
-          [duck-streams :only (spit slurp*)])))
+          [duck-streams :only (slurp*)])))
 
 (def N)
 (def board)
