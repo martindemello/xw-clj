@@ -9,7 +9,9 @@
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter FocusListener FocusAdapter)
      (java.awt.font TextLayout FontRenderContext))
-  (:use (xw board cursor graphics)))
+  (:use
+     (xw board cursor graphics)
+     (xw.swing events)))
 
 (def scale)
 (def n)
@@ -43,15 +45,6 @@
 (def agreen (new Color 0 128 0 64))
 (def pale-yellow (new Color 255 255 192 192))
 (def pale-blue (new Color 192 192 255 192))
-
-;; keyboard handling
-(defn char-of [e] (. KeyEvent getKeyText (. e getKeyCode)))
-(defn modifier [e] (. e getModifiers))
-(defn modtext [e] (. KeyEvent getKeyModifiersText (modifier e)))
-(def CTRL (. InputEvent CTRL_MASK))
-(def ALT (. InputEvent ALT_MASK))
-(defn ctrl? [e] (= CTRL (bit-and (modifier e) CTRL)))
-(defn alt? [e] (= ALT (bit-and (modifier e) ALT)))
 
 (defn board-action [c]
   (cond
@@ -158,31 +151,11 @@
 
 (defn make-grid [scale on-key] ; chainable keyboard handler
   (resize-grid scale)
-  (let [gpanel  (proxy [JPanel] [] (paint [g] (render g)))]
+  (let [gpanel (proxy [JPanel] [] (paint [g] (render g)))]
     (doto gpanel
       (.setFocusable true)
       (.setBackground (. Color white))
       (.setPreferredSize (new Dimension width height))
-
-      (.addKeyListener
-        (proxy [KeyAdapter] []
-          (keyPressed [e]
-                      (let [c (char-of e)]
-                        (cond
-                          (ctrl? e)  nil ; defer to parent
-                          (alt? e)   nil ; defer to menubar
-                          true      (board-action c))
-                        (.repaint gpanel)
-                        (on-key e)))))
-
-      (.addMouseListener
-        (proxy [MouseAdapter] []
-          (mouseClicked [e]
-                        (if (not gridpanel-focused?) (. gpanel requestFocus)
-                          (let [x (.getX e)
-                                y (.getY e)]
-                            (move-to (int (/ x scale)) (int (/ y scale)))
-                            (.repaint gpanel))))))
 
       (.addFocusListener
         (proxy [FocusAdapter] []
@@ -191,6 +164,24 @@
                        (.repaint gpanel))
           (focusLost [e]
                      (def gridpanel-focused? false)
-                     (.repaint gpanel)))))
+                     (.repaint gpanel))))
+
+      (add-key-pressed-listener 
+        (fn [e]
+          (let [c (char-of e)]
+            (cond
+              (ctrl? e)  nil ; defer to parent
+              (alt? e)   nil ; defer to menubar
+              true      (board-action c))
+            (.repaint gpanel)
+            (on-key e))))
+
+      (add-mouse-click-listener
+        (fn [e]
+          (if (not gridpanel-focused?) (. gpanel requestFocus)
+            (let [x (.getX e)
+                  y (.getY e)]
+              (move-to (int (/ x scale)) (int (/ y scale)))
+              (.repaint gpanel))))))
 
     gpanel))

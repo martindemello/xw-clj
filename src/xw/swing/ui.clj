@@ -10,15 +10,13 @@
      (java.awt.font TextLayout FontRenderContext))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
-          [swing-utils :only (add-key-typed-listener add-action-listener
-                                                     make-menubar
-                                                     make-action)]))
+          [swing-utils :only (add-action-listener make-menubar make-action)]))
   (:use (xw board cursor wordlist clues))
-  (:use (xw.swing grid)))
+  (:use (xw.swing grid events)))
 
 (require '[clojure.contrib.str-utils2 :as s])
 
-(declare update-wlist)
+(declare update-wordlist)
 (declare update-statusbar)
 (declare update-clueword)
 
@@ -102,21 +100,24 @@
   (def grid (make-grid scale extended-grid-keyhandler))
 
   ; the wordlist should fill the current word in when selected
-  (.. words getSelectionModel
-   (addListSelectionListener
-     (proxy [ListSelectionListener] []
-       (valueChanged [e]
-                     (let [w (first (.getSelectedValues words))]
-                       (when (= (current-word) wordlist-pattern)
-                         (set-current-word w)
-                         (.repaint grid)))))))
+  (add-key-pressed-listener
+    words
+    (fn [e]
+      (when (= (char-of e) "Enter")
+        (when (= (current-word) wordlist-pattern)
+          (let [w (first (.getSelectedValues words))]
+            (set-current-word w)
+            (update-wordlist)
+            (.repaint words)
+            (.repaint grid)
+            (.requestFocus grid))))))
 
   ; and force an update when focused, to prevent filling in inconsistent values
   ; into the grid
   (.addFocusListener
     words
     (proxy [FocusAdapter] []
-      (focusGained [e] (update-wlist))))
+      (focusGained [e] (update-wordlist))))
 
   ; the cluebox should track whether the current clue has been saved
   ; set bgcolor to pale yellow for saved and white for dirty
@@ -126,17 +127,14 @@
       (add-clue (.getText clueword) (.getText clue))
       (.setBackground clue pale-yellow)))
 
-  (.. clue getDocument
-    (addDocumentListener
-      (proxy [DocumentListener] []
-        (insertUpdate  [e] (.setBackground clue (. Color white)))
-        (removeUpdate  [e] (.setBackground clue (. Color white)))
-        (changedUpdate [e] (.setBackground clue (. Color white)))))))
+  (add-indifferent-document-listener
+    (.getDocument clue)
+    (fn [e] (.setBackground clue (. Color white)))))
 
 ; keyboard handler chained from grid keyboard handler
 (defn on-ctrl-key [c]
   (cond
-    (= c "R") (update-wlist)
+    (= c "R") (update-wordlist)
     (= c "L") (set-state :gridlock (not (state :gridlock)))))
 
 (defn extended-grid-keyhandler [e]
@@ -151,7 +149,7 @@
   (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
   (.setText (status :unsaved) (if (state :dirty) "*" " ")))
 
-(defn update-wlist []
+(defn update-wordlist []
   (let [cw (current-word)]
   (when (not (= cw wordlist-pattern))
     (def wordlist-pattern cw)
