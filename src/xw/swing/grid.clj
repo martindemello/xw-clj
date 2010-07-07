@@ -58,6 +58,10 @@
     (= c "Left")  (move-left)
     (= c "Enter") (flip-dir)))
 
+(defn ctrl-board-action [c]
+  (cond
+    (= c "Delete") (delete-current-word)))
+
 (defn topleft [x y]
   [(* x scale) (* y scale)])
 
@@ -170,8 +174,8 @@
         (fn [e]
           (let [c (char-of e)]
             (cond
-              (ctrl? e)  nil ; defer to parent
-              (alt? e)   nil ; defer to menubar
+              (ctrl? e) (ctrl-board-action c)
+              (alt? e)  nil ; defer to menubar
               true      (board-action c))
             (.repaint gpanel)
             (on-key e))))

@@ -1,5 +1,7 @@
 (ns xw.cursor
   (:use (xw board)))
+
+(require '[clojure.contrib.str-utils2 :as s])
  
 ;cursor movement
 (defn goto-origin []
@@ -67,11 +69,14 @@
         d (range j N)]
     (concat (reverse (collect-dn i u)) (collect-dn i d))))
 
-(defn current-word-squares []
+(defn word-squares [x y dir]
   (cond
-    (black? current-x current-y) nil
-    (across?) (ac-word current-x current-y)
-    true (dn-word current-x current-y)))
+    (black? x y) nil
+    (= dir :across) (ac-word x y)
+    true (dn-word x y)))
+
+(defn current-word-squares []
+  (word-squares current-x current-y current-dir))
 
 (defn current-word []
   (apply str (map #(apply re-char %) (current-word-squares))))
@@ -80,3 +85,18 @@
   (doseq [[i j l] (map conj (current-word-squares) w)]
     (set-letter i j (str l))))
 
+(defn crossing-word [x y dir]
+  (if (= dir :across)
+    (dn-word x y)
+    (ac-word x y)))
+
+(defn delete-word [x y dir]
+  (doseq [[i j] (word-squares x y dir)]
+    (let [ws (crossing-word i j dir)
+          empty? (fn [i] (apply blank? i))]
+      (when (some empty? ws)
+        (set-letter i j :empty)))))
+
+(defn delete-current-word []
+  (let [x current-x y current-y dir current-dir]
+    (delete-word x y dir)))
