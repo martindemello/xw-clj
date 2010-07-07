@@ -180,8 +180,12 @@
         (fn [e]
           (if (not gridpanel-focused?) (. gpanel requestFocus)
             (let [x (.getX e)
-                  y (.getY e)]
-              (move-to (int (/ x scale)) (int (/ y scale)))
+                  y (.getY e)
+                  cx (int (/ x scale))
+                  cy (int (/ y scale))]
+              (if (and (= cx current-x) (= cy current-y))
+                (flip-dir)
+                (move-to cx cy))
               (.repaint gpanel))))))
 
     gpanel))
