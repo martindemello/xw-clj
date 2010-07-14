@@ -2,7 +2,7 @@
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
                   JOptionPane JDialog JSeparator SwingUtilities JFileChooser
-                  BorderFactory)
+                  BorderFactory JToolBar)
      (javax.swing.event DocumentListener ListSelectionListener)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
@@ -82,7 +82,8 @@
   (def ui
     (let [panel (miglayout
                   (JPanel.)
-                  (JPanel.) {:id :gridpanel} :growy
+                  (JToolBar. "Toolbar") {:id :toolbar}
+                  (JPanel.) {:id :gridpanel} :growy :newline
                   (JScrollPane. words) {:id :wlist :width 200 :height 450}
                   cluebox :newline :span :growx
                   statusbar :newline :span :growx)
@@ -93,9 +94,14 @@
   (def mf (ui :frame))
   (def mainpanel (ui :panel))
   (def gridpanel ((components mainpanel) :gridpanel))
+  (def toolbar ((components mainpanel) :toolbar))
   (def clueword ((components cluebox) :word))
   (def clue ((components cluebox) :clue))
   (def wlist ((components mainpanel) :wlist))
+
+  (doto toolbar
+    (.add (JButton. "Hello"))
+    (.add (JButton. "World")))
 
   (def grid (make-grid scale extended-grid-keyhandler))
 
