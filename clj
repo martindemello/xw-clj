@@ -1,7 +1,7 @@
 #!/bin/bash
 
 WD=`pwd`
-CLASSPATH="$WD/lib/clojure.jar:$WD/lib/*:$WD/classes/*:$WD/src"   # update for your env
+CLASSPATH="$WD/lib/clojure.jar:$WD/lib/*:$WD/classes/*:$WD/src/clj"   # update for your env
 
 if [ $# -eq 0 ] ; then
     exec rlwrap java -cp "$CLASSPATH" clojure.main --repl
