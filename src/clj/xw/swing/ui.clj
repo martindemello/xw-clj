@@ -7,7 +7,8 @@
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter FocusListener FocusAdapter)
-     (java.awt.font TextLayout FontRenderContext))
+     (java.awt.font TextLayout FontRenderContext)
+     (com.l2fprod.common.swing StatusBar))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
           [swing-utils :only (add-action-listener make-menubar make-action)]))
@@ -86,7 +87,8 @@
                   (JPanel.) {:id :gridpanel} :growy :newline
                   (JScrollPane. words) {:id :wlist :width 200 :height 450}
                   cluebox :newline :span :growx
-                  statusbar :newline :span :growx)
+                  statusbar :newline :span :growx
+                  (StatusBar.) :newline :span :growx)
           frame (JFrame. "Crossword Editor")
           ]
       { :frame frame :panel panel}))
