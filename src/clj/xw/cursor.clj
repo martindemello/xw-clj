@@ -94,7 +94,8 @@
   (doseq [[i j] (word-squares x y dir)]
     (let [ws (crossing-word i j dir)
           empty? (fn [i] (apply blank? i))]
-      (when (some empty? ws)
+      (when (or (= 1 (count ws))
+                (some empty? ws))
         (set-letter i j :empty)))))
 
 (defn delete-current-word []
