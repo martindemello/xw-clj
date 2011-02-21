@@ -20,6 +20,8 @@
 (declare update-wordlist)
 (declare update-statusbar)
 (declare update-clueword)
+(declare save-file-dialog)
+(declare toggle-gridlock)
 
 ;;; -----------------------------------------
 ;;; Graphics
@@ -101,9 +103,11 @@
   (def clue ((components cluebox) :clue))
   (def wlist ((components mainpanel) :wlist))
 
+  (def save-button (doto (JButton. "Save") (on-action ev (save-file-dialog))))
+  (def lock-button (doto (JButton. "Lock") (on-action ev (toggle-gridlock))))
   (doto toolbar
-    (.add (JButton. "Hello"))
-    (.add (JButton. "World")))
+    (.add lock-button)
+    (.add save-button))
 
   (def grid (make-grid scale extended-grid-keyhandler))
 
@@ -139,11 +143,15 @@
     (.getDocument clue)
     (fn [e] (.setBackground clue (. Color white)))))
 
+(defn toggle-gridlock [] 
+  (set-state :gridlock (not (state :gridlock)))
+  (update-statusbar))
+
 ; keyboard handler chained from grid keyboard handler
 (defn on-ctrl-key [c]
   (cond
     (= c "R") (update-wordlist)
-    (= c "L") (set-state :gridlock (not (state :gridlock)))))
+    (= c "L") (toggle-gridlock)))
 
 (defn extended-grid-keyhandler [e]
   (let [c (char-of e)]
@@ -177,14 +185,14 @@
 
 (defn exit [] (. System exit 0))
 
-(defn save-file-handler [_]
+(defn save-file-dialog []
   (let [fc (JFileChooser.)]
     (when (= (.showSaveDialog fc mf) JFileChooser/APPROVE_OPTION)
       (let [f (.getSelectedFile fc)]
         (save-to-file f)
         (update-statusbar)))))
 
-(defn load-file-handler [_]
+(defn load-file-dialog []
   (let [fc (JFileChooser.)]
     (when (= (.showOpenDialog fc mf) JFileChooser/APPROVE_OPTION)
       (let [f (.getSelectedFile fc)]
@@ -196,6 +204,12 @@
           (. JOptionPane showMessageDialog mf "Could not load file" "Error" JOptionPane/ERROR_MESSAGE))
         (update-statusbar)
         (.repaint grid)))))
+
+(defn save-file-handler [_]
+  (save-file-dialog))
+
+(defn load-file-handler [_]
+  (load-file-dialog))
 
 (defn new-file-handler [n]
   (init-board n)

@@ -37,3 +37,8 @@
     (.addDocumentListener component listener)
     listener))
 
+; thanks to stuart sierra for this
+(defmacro on-action [component event & body]
+  `(. ~component addActionListener
+      (proxy [java.awt.event.ActionListener] []
+        (actionPerformed [~event] ~@body))))
