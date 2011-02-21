@@ -82,26 +82,31 @@
       (.setEditable clue false)
       panel))
 
+  (def gridtab
+    (let [panel (miglayout
+                  (JPanel.)
+                  (JPanel.) {:id :gridpanel} :growy :newline
+                  (JScrollPane. words) {:id :wlist :width 200 :height 450}
+                  cluebox :newline :span :growx)]
+      panel))
+
   (def ui
     (let [panel (miglayout
                   (JPanel.)
                   (JToolBar. "Toolbar") {:id :toolbar}
-                  (JPanel.) {:id :gridpanel} :growy :newline
-                  (JScrollPane. words) {:id :wlist :width 200 :height 450}
-                  cluebox :newline :span :growx
+                  gridtab :newline :span :growx
                   statusbar :newline :span :growx)
-            ;      (StatusBar.) :newline :span :growx)
           frame (JFrame. "Crossword Editor")
           ]
       { :frame frame :panel panel}))
 
   (def mf (ui :frame))
   (def mainpanel (ui :panel))
-  (def gridpanel ((components mainpanel) :gridpanel))
+  (def gridpanel ((components gridtab) :gridpanel))
+  (def wlist ((components gridtab) :wlist))
   (def toolbar ((components mainpanel) :toolbar))
   (def clueword ((components cluebox) :word))
   (def clue ((components cluebox) :clue))
-  (def wlist ((components mainpanel) :wlist))
 
   (def save-button (doto (JButton. "Save") (on-action ev (save-file-dialog))))
   (def lock-button (doto (JButton. "Lock") (on-action ev (toggle-gridlock))))
