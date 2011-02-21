@@ -2,7 +2,7 @@
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
                   JOptionPane JDialog JSeparator SwingUtilities JFileChooser
-                  BorderFactory JToolBar)
+                  BorderFactory JToolBar JTabbedPane)
      (javax.swing.event DocumentListener ListSelectionListener)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
@@ -90,11 +90,16 @@
                   cluebox :newline :span :growx)]
       panel))
 
+  (def tabs
+    (let [tabpane (JTabbedPane.)]
+      (doto tabpane
+        (.addTab "Grid" gridtab))))
+
   (def ui
     (let [panel (miglayout
                   (JPanel.)
                   (JToolBar. "Toolbar") {:id :toolbar}
-                  gridtab :newline :span :growx
+                  tabs :newline :span :growx
                   statusbar :newline :span :growx)
           frame (JFrame. "Crossword Editor")
           ]
