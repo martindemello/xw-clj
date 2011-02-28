@@ -2,7 +2,7 @@
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
                   JOptionPane JDialog JSeparator SwingUtilities JFileChooser
-                  BorderFactory JToolBar JTabbedPane)
+                  BorderFactory JToolBar JTabbedPane UIManager)
      (javax.swing.event DocumentListener ListSelectionListener)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
@@ -295,4 +295,6 @@
   (doto grid
     (.repaint)
     (.requestFocus))
+
+  (UIManager/setLookAndFeel "com.seaglasslookandfeel.SeaGlassLookAndFeel")
   )
