@@ -1,6 +1,6 @@
 (ns xw.swing.events
   (:import
-     (javax.swing.event DocumentListener)
+     (javax.swing.event DocumentListener ChangeListener)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter FocusListener FocusAdapter)))
 
@@ -29,13 +29,21 @@
 
 ; common action for add/remove/change
 (defn add-indifferent-document-listener [component f & args]
-  (let [listener 
+  (let [listener
         (proxy [DocumentListener] []
           (insertUpdate  [e] (apply f e args))
           (removeUpdate  [e] (apply f e args))
           (changedUpdate [e] (apply f e args)))]
     (.addDocumentListener component listener)
     listener))
+
+(defn add-tab-change-listener [component f & args]
+  (let [listener
+        (proxy [ChangeListener] []
+          (stateChanged [e] (apply f e args)))]
+    (.addChangeListener component listener)
+    listener))
+
 
 ; thanks to stuart sierra for this
 (defmacro on-action [component event & body]

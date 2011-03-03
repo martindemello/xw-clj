@@ -3,7 +3,6 @@
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
                   JOptionPane JDialog JSeparator SwingUtilities JFileChooser
                   BorderFactory JToolBar JTabbedPane UIManager JTextArea)
-     (javax.swing.event DocumentListener ListSelectionListener ChangeListener)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter FocusListener FocusAdapter)
@@ -24,6 +23,7 @@
 (declare update-clueword)
 (declare save-file-dialog)
 (declare toggle-gridlock)
+(declare update-clue-list)
 
 ;;; -----------------------------------------
 ;;; Graphics
@@ -41,6 +41,7 @@
 (def gridpanel)
 (def clueword)
 (def clue)
+(def cluesheet)
 (def wlist)
 (def extended-grid-keyhandler)
 
@@ -107,14 +108,7 @@
         (.addTab "Grid" gridtab)
         (.addTab "Clues" cluetab))))
 
-  (.addChangeListener
-    tabs
-    (proxy [ChangeListener] []
-      (stateChanged
-        [e]
-        (.setText cluesheet
-                  (join "\n"
-                        (complete-words))))))
+  (add-tab-change-listener tabs (fn [_] (update-clue-list)))
 
   (def ui
     (let [panel (miglayout
@@ -213,6 +207,10 @@
       (.setText clueword word)
       (.setText clue (clue-for word))
       (.setEditable clue true))))
+
+(defn update-clue-list []
+  (.setText cluesheet (join "\n" (complete-words))))
+
 
 (defn exit [] (. System exit 0))
 
