@@ -1,6 +1,8 @@
 (ns xw.words
   (:use (xw board)))
 
+(require '[clojure.contrib.str-utils2 :as s])
+
 (defn re-char [i j]
   (let [l (letter i j)]
     (cond
@@ -37,6 +39,9 @@
     (= dir :across) (ac-word x y)
     true (dn-word x y)))
 
+(defn str-word [squares]
+  (apply str (map #(apply re-char %) squares)))
+
 (defn crossing-word [x y dir]
   (if (= dir :across)
     (dn-word x y)
@@ -49,3 +54,20 @@
       (when (or (= 1 (count ws))
                 (some empty? ws))
         (set-letter i j :empty)))))
+
+(defn get-words [[x y]]
+  (vec (remove nil?
+          [(when (start-across? x y) [\A (number x y) (str-word (ac-word x y))])
+           (when (start-down? x y) [\D (number x y) (str-word (dn-word x y))])])))
+
+(defn all-words []
+  (remove empty? (apply concat (map get-words board-iter))))
+
+(defn partial-word? [w]
+  (s/contains? w "."))
+
+(defn partial-clue? [cl]
+  (partial-word? (cl 2)))
+
+(defn complete-words []
+  (remove partial-clue? (all-words)))

@@ -2,8 +2,8 @@
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
                   JOptionPane JDialog JSeparator SwingUtilities JFileChooser
-                  BorderFactory JToolBar JTabbedPane UIManager)
-     (javax.swing.event DocumentListener ListSelectionListener)
+                  BorderFactory JToolBar JTabbedPane UIManager JTextArea)
+     (javax.swing.event DocumentListener ListSelectionListener ChangeListener)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter FocusListener FocusAdapter)
@@ -11,8 +11,10 @@
 ;     (com.l2fprod.common.swing StatusBar))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
-          [swing-utils :only (add-action-listener make-menubar make-action)]))
-  (:use (xw board cursor wordlist clues))
+          [swing-utils :only (add-action-listener make-menubar make-action)]
+          [pprint :only (pprint)]
+          ))
+  (:use (xw board cursor wordlist clues words))
   (:use (xw.swing grid events)))
 
 (require '[clojure.contrib.str-utils2 :as s])
@@ -90,10 +92,29 @@
                   cluebox :newline :span :growx)]
       panel))
 
+  (def cluesheet (JTextArea.))
+
+  (def cluetab
+    (let [panel (miglayout
+                  (JPanel.) {:id :cluepanel} :growy :newline
+                  (JScrollPane. cluesheet))]
+      panel))
+
+
   (def tabs
     (let [tabpane (JTabbedPane.)]
       (doto tabpane
-        (.addTab "Grid" gridtab))))
+        (.addTab "Grid" gridtab)
+        (.addTab "Clues" cluetab))))
+
+  (.addChangeListener
+    tabs
+    (proxy [ChangeListener] []
+      (stateChanged
+        [e]
+        (.setText cluesheet
+                  (join "\n"
+                        (complete-words))))))
 
   (def ui
     (let [panel (miglayout
@@ -153,7 +174,7 @@
     (.getDocument clue)
     (fn [e] (.setBackground clue (. Color white)))))
 
-(defn toggle-gridlock [] 
+(defn toggle-gridlock []
   (set-state :gridlock (not (state :gridlock)))
   (update-statusbar))
 
