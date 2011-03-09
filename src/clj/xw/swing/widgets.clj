@@ -23,6 +23,12 @@
     (when (= sel JFileChooser/APPROVE_OPTION)
       (f (.getSelectedFile fc)))))
 
+(defn error-dialog [parent text]
+  (. JOptionPane showMessageDialog parent text "Error" JOptionPane/ERROR_MESSAGE))
+
+(defn message-dialog [parent text title]
+  (. JOptionPane showMessageDialog parent text title JOptionPane/PLAIN_MESSAGE))
+
 ; statusbar
 (defn init-status []
   (def status

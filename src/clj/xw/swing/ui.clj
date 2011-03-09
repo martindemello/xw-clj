@@ -1,8 +1,8 @@
 (ns xw.swing.ui
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
-                  JOptionPane JDialog JSeparator SwingUtilities JFileChooser
-                  BorderFactory JToolBar JTabbedPane UIManager JTextArea)
+                  JSeparator SwingUtilities JToolBar JTabbedPane UIManager
+                  JTextArea)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter)
@@ -15,6 +15,7 @@
           ))
   (:use (xw board cursor wordlist clues words))
   (:use (xw.swing grid events widgets)))
+
 
 (require '[clojure.contrib.str-utils2 :as s])
 
@@ -176,8 +177,14 @@
 (defn update-clue-list []
   (.setText cluesheet (join "\n" (complete-words))))
 
-
 (defn exit [] (. System exit 0))
+
+(defn reinit-ui []
+  (resize-grid scale)
+  (goto-origin)
+  (init-status)
+  (update-statusbar)
+  (.repaint grid))
 
 (defn save-file-dialog []
   (file-dialog
@@ -191,13 +198,8 @@
     mf :load
     (fn [f]
       (if (load-from-file f)
-        (do
-          (resize-grid scale)
-          (goto-origin)
-          (init-status))
-        (. JOptionPane showMessageDialog mf "Could not load file" "Error" JOptionPane/ERROR_MESSAGE))
-      (update-statusbar)
-      (.repaint grid))))
+        (reinit-ui)
+        (error-dialog "Could not load file")))))
 
 (defn save-file-handler [_]
   (save-file-dialog))
@@ -207,14 +209,10 @@
 
 (defn new-file-handler [n]
   (init-board n)
-  (resize-grid scale)
-  (goto-origin)
-  (init-status)
-  (update-statusbar)
-  (.repaint grid))
+  (reinit-ui))
 
 (defn show-about [_]
-  (. JOptionPane showMessageDialog mf "Hello World" "About Crossword Editor" JOptionPane/PLAIN_MESSAGE))
+  (message-dialog "Hello World" "About Crossword Editor"))
 
 (defn init-menu [frame]
   (let [menubar-spec
