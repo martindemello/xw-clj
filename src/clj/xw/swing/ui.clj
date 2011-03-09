@@ -291,7 +291,7 @@
   (make-widgets sc)
 
   (doto mf
-    (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
+    (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
     (.add mainpanel)
     (.pack)
     (.setVisible true))
