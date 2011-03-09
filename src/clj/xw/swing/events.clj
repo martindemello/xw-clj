@@ -44,6 +44,12 @@
     (.addChangeListener component listener)
     listener))
 
+(defn add-focus-listener [component f & args]
+  (let [listener
+        (proxy [FocusAdapter] []
+          (focusGained [e] (apply f e args)))]
+    (.addFocusListener component listener)
+    listener))
 
 ; thanks to stuart sierra for this
 (defmacro on-action [component event & body]

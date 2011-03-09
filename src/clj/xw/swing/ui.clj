@@ -5,7 +5,7 @@
                   BorderFactory JToolBar JTabbedPane UIManager JTextArea)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
-                     InputEvent MouseAdapter FocusListener FocusAdapter)
+                     InputEvent MouseAdapter)
      (java.awt.font TextLayout FontRenderContext))
 ;     (com.l2fprod.common.swing StatusBar))
   (:use (clojure.contrib
@@ -14,7 +14,7 @@
           [pprint :only (pprint)]
           ))
   (:use (xw board cursor wordlist clues words))
-  (:use (xw.swing grid events)))
+  (:use (xw.swing grid events widgets)))
 
 (require '[clojure.contrib.str-utils2 :as s])
 
@@ -50,63 +50,31 @@
 (def words (JList.))
 (def wordlist-pattern "")
 
-; statusbar
-(defn init-status []
-  (def status
-    {:notification (JLabel. "Crossword Constructor")
-     :gridlock     (JLabel. "UNLOCKED")
-     :unsaved      (JLabel. " ") }))
-
 (init-status)
-
-(let [border (. BorderFactory createEtchedBorder)]
-  (doseq [[_ l] status]
-    (.setBorder l border)))
 
 (defn make-widgets [scale]
   ; TODO: Fix padding!
-  (def statusbar
-    (let [panel (miglayout
-                  (JPanel.) {:gap "0 0 0 0"}
-                  (status :notification) :push :growx {:pad "0 0 0 0"}
-                  (status :gridlock) {:pad "0 0 0 0"}
-                  (status :unsaved) {:pad "0 0 0 0"})
-          border (. BorderFactory createLoweredBevelBorder)]
-      (.setBorder panel border)
-      panel))
-
-  (def cluebox
-    (let [word (JTextField. 15)
-          clue (JTextField. 40)
-          panel (miglayout (JPanel.)
-                           word {:id :word}
-                           clue {:id :clue} :growx)]
-      (.setEditable word false)
-      (.setEditable clue false)
-      panel))
+  (def statusbar (make-statusbar status))
+  (def cluebox   (make-cluebox))
 
   (def gridtab
-    (let [panel (miglayout
-                  (JPanel.)
-                  (JPanel.) {:id :gridpanel} :growy :newline
-                  (JScrollPane. words) {:id :wlist :width 200 :height 450}
-                  cluebox :newline :span :growx)]
-      panel))
+    (miglayout
+      (JPanel.)
+      (JPanel.) {:id :gridpanel} :growy :newline
+      (JScrollPane. words) {:id :wlist :width 200 :height 450}
+      cluebox :newline :span :growx))
 
   (def cluesheet (JTextArea.))
 
   (def cluetab
-    (let [panel (miglayout
-                  (JPanel.) {:id :cluepanel} :growy :newline
-                  (JScrollPane. cluesheet))]
-      panel))
-
+    (miglayout
+      (JPanel.) {:id :cluepanel} :growy :newline
+      (JScrollPane. cluesheet)))
 
   (def tabs
-    (let [tabpane (JTabbedPane.)]
-      (doto tabpane
-        (.addTab "Grid" gridtab)
-        (.addTab "Clues" cluetab))))
+    (doto (JTabbedPane.)
+      (.addTab "Grid" gridtab)
+      (.addTab "Clues" cluetab)))
 
   (add-tab-change-listener tabs (fn [_] (update-clue-list)))
 
@@ -151,10 +119,7 @@
 
   ; and force an update when focused, to prevent filling in inconsistent values
   ; into the grid
-  (.addFocusListener
-    words
-    (proxy [FocusAdapter] []
-      (focusGained [e] (update-wordlist))))
+  (add-focus-listener words (fn [_] (update-wordlist)))
 
   ; the cluebox should track whether the current clue has been saved
   ; set bgcolor to pale yellow for saved and white for dirty
@@ -215,24 +180,24 @@
 (defn exit [] (. System exit 0))
 
 (defn save-file-dialog []
-  (let [fc (JFileChooser.)]
-    (when (= (.showSaveDialog fc mf) JFileChooser/APPROVE_OPTION)
-      (let [f (.getSelectedFile fc)]
-        (save-to-file f)
-        (update-statusbar)))))
+  (file-dialog
+    mf :save
+    (fn [f]
+      (save-to-file f)
+      (update-statusbar))))
 
 (defn load-file-dialog []
-  (let [fc (JFileChooser.)]
-    (when (= (.showOpenDialog fc mf) JFileChooser/APPROVE_OPTION)
-      (let [f (.getSelectedFile fc)]
-        (if (load-from-file f)
-          (do
-            (resize-grid scale)
-            (goto-origin)
-            (init-status))
-          (. JOptionPane showMessageDialog mf "Could not load file" "Error" JOptionPane/ERROR_MESSAGE))
-        (update-statusbar)
-        (.repaint grid)))))
+  (file-dialog
+    mf :load
+    (fn [f]
+      (if (load-from-file f)
+        (do
+          (resize-grid scale)
+          (goto-origin)
+          (init-status))
+        (. JOptionPane showMessageDialog mf "Could not load file" "Error" JOptionPane/ERROR_MESSAGE))
+      (update-statusbar)
+      (.repaint grid))))
 
 (defn save-file-handler [_]
   (save-file-dialog))
