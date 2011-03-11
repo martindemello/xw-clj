@@ -2,7 +2,8 @@
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
                   JSeparator SwingUtilities JToolBar JTabbedPane UIManager
-                  JTextArea)
+                  JTextArea JTable)
+     (javax.swing.table AbstractTableModel)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter)
@@ -24,7 +25,7 @@
 (declare update-clueword)
 (declare save-file-dialog)
 (declare toggle-gridlock)
-(declare update-clue-list)
+(declare update-cluelist)
 
 ;;; -----------------------------------------
 ;;; Graphics
@@ -43,6 +44,8 @@
 (def clueword)
 (def clue)
 (def cluesheet)
+(def cluetable)
+(def cluelist [])
 (def wlist)
 (def extended-grid-keyhandler)
 
@@ -65,7 +68,18 @@
       (JScrollPane. words) {:id :wlist :width 200 :height 450}
       cluebox :newline :span :growx))
 
-  (def cluesheet (JTextArea.))
+  (let [column-names ["" "Word" "Clue"]
+          table-model (proxy [AbstractTableModel] []
+                        (getColumnCount [] (count column-names))
+                        (getRowCount [] (count cluelist))
+                        (isCellEditable [row col] false)
+                        (getColumnName [col] (nth column-names col))
+                        (getValueAt [row col] (get-in cluelist [row col])))
+        table (doto (JTable. table-model)
+                (.setGridColor java.awt.Color/DARK_GRAY))
+        ]
+    (def cluesheet table)
+    (def cluemodel table-model))
 
   (def cluetab
     (miglayout
@@ -77,7 +91,7 @@
       (.addTab "Grid" gridtab)
       (.addTab "Clues" cluetab)))
 
-  (add-tab-change-listener tabs (fn [_] (update-clue-list)))
+  (add-tab-change-listener tabs (fn [_] (update-cluelist)))
 
   (def ui
     (let [panel (miglayout
@@ -174,8 +188,9 @@
       (.setText clue (clue-for word))
       (.setEditable clue true))))
 
-(defn update-clue-list []
-  (.setText cluesheet (join "\n" (complete-words))))
+(defn update-cluelist []
+  (def cluelist (active-cluelist))
+  (.fireTableStructureChanged cluemodel))
 
 (defn exit [] (. System exit 0))
 

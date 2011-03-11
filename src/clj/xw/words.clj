@@ -1,5 +1,5 @@
 (ns xw.words
-  (:use (xw board)))
+  (:use (xw board clues)))
 
 (require '[clojure.contrib.str-utils2 :as s])
 
@@ -71,3 +71,7 @@
 
 (defn complete-words []
   (remove partial-clue? (all-words)))
+
+(defn active-cluelist []
+  (vec (map (fn [[l n w]] [(str n l) w (clue-for w)])
+            (complete-words))))
