@@ -16,6 +16,7 @@
           ))
   (:require [xw.swing.statusbar :as statusbar])
   (:require [xw.swing.file :as file])
+  (:require [xw.swing.cluebox :as cluebox])
   (:use (xw board cursor wordlist clues words))
   (:use (xw.swing grid events widgets)))
 
@@ -23,7 +24,6 @@
 (require '[clojure.contrib.str-utils2 :as s])
 
 (declare update-wordlist)
-(declare update-clueword)
 (declare toggle-gridlock)
 (declare update-cluelist)
 
@@ -35,13 +35,10 @@
 
 ; forward declarations
 (def ui)
-(def cluebox)
 (def grid)
 (def mf)
 (def mainpanel)
 (def gridpanel)
-(def clueword)
-(def clue)
 (def cluesheet)
 (def cluetable)
 (def cluelist [])
@@ -55,14 +52,13 @@
 
 (defn make-widgets [scale]
   ; TODO: Fix padding!
-  (def cluebox   (make-cluebox))
 
   (def gridtab
     (miglayout
       (JPanel.)
       (JPanel.) {:id :gridpanel} :growy :newline
       (JScrollPane. words) {:id :wlist :width 200 :height 450}
-      cluebox :newline :span :growx))
+      (cluebox/make) :newline :span :growx))
 
   (let [column-names ["" "Word" "Clue"]
           table-model (proxy [AbstractTableModel] []
@@ -104,8 +100,6 @@
   (def gridpanel ((components gridtab) :gridpanel))
   (def wlist ((components gridtab) :wlist))
   (def toolbar ((components mainpanel) :toolbar))
-  (def clueword ((components cluebox) :word))
-  (def clue ((components cluebox) :clue))
 
   (def save-button (doto (JButton. "Save") (on-action ev (file/save-file-dialog mf))))
   (def lock-button (doto (JButton. "Lock") (on-action ev (toggle-gridlock))))
@@ -130,19 +124,7 @@
 
   ; and force an update when focused, to prevent filling in inconsistent values
   ; into the grid
-  (add-focus-listener words (fn [_] (update-wordlist)))
-
-  ; the cluebox should track whether the current clue has been saved
-  ; set bgcolor to pale yellow for saved and white for dirty
-  (add-action-listener
-    clue
-    (fn [_]
-      (add-clue (.getText clueword) (.getText clue))
-      (.setBackground clue pale-yellow)))
-
-  (add-indifferent-document-listener
-    (.getDocument clue)
-    (fn [e] (.setBackground clue (. Color white)))))
+  (add-focus-listener words (fn [_] (update-wordlist))))
 
 (defn toggle-gridlock []
   (set-state :gridlock (not (state :gridlock)))
@@ -159,7 +141,7 @@
     (cond
       (ctrl? e) (on-ctrl-key c))
     (statusbar/update)
-    (update-clueword (current-word))))
+    (cluebox/update (current-word))))
 
 ; update widgets
 (defn update-wordlist []
@@ -168,17 +150,6 @@
     (def wordlist-pattern cw)
     (let [w (take 26 (words-with cw))]
       (. words setListData (to-array w))))))
-
-(defn update-clueword [word]
-  (if (and word (s/contains? word "."))
-    (do
-      (.setText clueword "")
-      (.setText clue "")
-      (.setEditable clue false))
-    (do
-      (.setText clueword word)
-      (.setText clue (clue-for word))
-      (.setEditable clue true))))
 
 (defn update-cluelist []
   (def cluelist (active-cluelist))
