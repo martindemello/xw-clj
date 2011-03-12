@@ -15,6 +15,7 @@
           [pprint :only (pprint)]
           ))
   (:require [xw.swing.statusbar :as statusbar])
+  (:require [xw.swing.file :as file])
   (:use (xw board cursor wordlist clues words))
   (:use (xw.swing grid events widgets)))
 
@@ -23,7 +24,6 @@
 
 (declare update-wordlist)
 (declare update-clueword)
-(declare save-file-dialog)
 (declare toggle-gridlock)
 (declare update-cluelist)
 
@@ -107,7 +107,7 @@
   (def clueword ((components cluebox) :word))
   (def clue ((components cluebox) :clue))
 
-  (def save-button (doto (JButton. "Save") (on-action ev (save-file-dialog))))
+  (def save-button (doto (JButton. "Save") (on-action ev (file/save-file-dialog mf))))
   (def lock-button (doto (JButton. "Lock") (on-action ev (toggle-gridlock))))
   (doto toolbar
     (.add lock-button)
@@ -193,26 +193,12 @@
   (statusbar/update)
   (.repaint grid))
 
-(defn save-file-dialog []
-  (file-dialog
-    mf :save
-    (fn [f]
-      (save-to-file f)
-      (statusbar/update))))
-
-(defn load-file-dialog []
-  (file-dialog
-    mf :load
-    (fn [f]
-      (if (load-from-file f)
-        (reinit-ui)
-        (error-dialog "Could not load file")))))
-
 (defn save-file-handler [_]
-  (save-file-dialog))
+  (file/save-file-dialog mf))
 
 (defn load-file-handler [_]
-  (load-file-dialog))
+  (when (file/load-file-dialog mf)
+    (reinit-ui)))
 
 (defn new-file-handler [n]
   (init-board n)

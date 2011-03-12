@@ -1,8 +1,8 @@
 (ns xw.swing.widgets
   (:import
      (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
-                  JOptionPane JDialog JSeparator SwingUtilities JFileChooser
-                  BorderFactory JToolBar JTabbedPane UIManager JTextArea)
+                  JOptionPane JDialog JSeparator SwingUtilities BorderFactory
+                  JToolBar JTabbedPane UIManager JTextArea)
      (java.awt Color Font GridLayout BorderLayout FlowLayout)
      (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
                      InputEvent MouseAdapter)
@@ -14,14 +14,6 @@
           ))
   (:use (xw board cursor wordlist clues words))
   (:use (xw.swing grid events)))
-
-(defn file-dialog [parent arg f]
-  (let [fc (JFileChooser.)
-        sel (if (= arg :load)
-              (.showOpenDialog fc parent)
-              (.showSaveDialog fc parent))]
-    (when (= sel JFileChooser/APPROVE_OPTION)
-      (f (.getSelectedFile fc)))))
 
 (defn error-dialog [parent text]
   (. JOptionPane showMessageDialog parent text "Error" JOptionPane/ERROR_MESSAGE))
