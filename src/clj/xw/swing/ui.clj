@@ -14,6 +14,7 @@
           [swing-utils :only (add-action-listener make-menubar make-action)]
           [pprint :only (pprint)]
           ))
+  (:require [xw.swing.statusbar :as statusbar])
   (:use (xw board cursor wordlist clues words))
   (:use (xw.swing grid events widgets)))
 
@@ -21,7 +22,6 @@
 (require '[clojure.contrib.str-utils2 :as s])
 
 (declare update-wordlist)
-(declare update-statusbar)
 (declare update-clueword)
 (declare save-file-dialog)
 (declare toggle-gridlock)
@@ -34,7 +34,6 @@
 ;; layout and widgets
 
 ; forward declarations
-(def statusbar)
 (def ui)
 (def cluebox)
 (def grid)
@@ -54,11 +53,8 @@
 (def words (JList.))
 (def wordlist-pattern "")
 
-(init-status)
-
 (defn make-widgets [scale]
   ; TODO: Fix padding!
-  (def statusbar (make-statusbar status))
   (def cluebox   (make-cluebox))
 
   (def gridtab
@@ -98,7 +94,7 @@
                   (JPanel.)
                   (JToolBar. "Toolbar") {:id :toolbar}
                   tabs :newline :span :growx
-                  statusbar :newline :span :growx)
+                  (statusbar/make) :newline :span :growx)
           frame (JFrame. "Crossword Editor")
           ]
       { :frame frame :panel panel}))
@@ -150,7 +146,7 @@
 
 (defn toggle-gridlock []
   (set-state :gridlock (not (state :gridlock)))
-  (update-statusbar))
+  (statusbar/update))
 
 ; keyboard handler chained from grid keyboard handler
 (defn on-ctrl-key [c]
@@ -162,14 +158,10 @@
   (let [c (char-of e)]
     (cond
       (ctrl? e) (on-ctrl-key c))
-    (update-statusbar)
+    (statusbar/update)
     (update-clueword (current-word))))
 
 ; update widgets
-(defn update-statusbar []
-  (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
-  (.setText (status :unsaved) (if (state :dirty) "*" " ")))
-
 (defn update-wordlist []
   (let [cw (current-word)]
   (when (not (= cw wordlist-pattern))
@@ -197,8 +189,8 @@
 (defn reinit-ui []
   (resize-grid scale)
   (goto-origin)
-  (init-status)
-  (update-statusbar)
+  (statusbar/init)
+  (statusbar/update)
   (.repaint grid))
 
 (defn save-file-dialog []
@@ -206,7 +198,7 @@
     mf :save
     (fn [f]
       (save-to-file f)
-      (update-statusbar))))
+      (statusbar/update))))
 
 (defn load-file-dialog []
   (file-dialog

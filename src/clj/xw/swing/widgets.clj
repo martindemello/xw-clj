@@ -29,27 +29,6 @@
 (defn message-dialog [parent text title]
   (. JOptionPane showMessageDialog parent text title JOptionPane/PLAIN_MESSAGE))
 
-; statusbar
-(defn init-status []
-  (def status
-    {:notification (JLabel. "Crossword Constructor")
-     :gridlock     (JLabel. "UNLOCKED")
-     :unsaved      (JLabel. " ") })
-
-  (let [border (. BorderFactory createEtchedBorder)]
-    (doseq [[_ l] status]
-      (.setBorder l border))))
-
-(defn make-statusbar [status]
-  (let [panel (miglayout
-                (JPanel.) {:gap "0 0 0 0"}
-                (status :notification) :push :growx {:pad "0 0 0 0"}
-                (status :gridlock) {:pad "0 0 0 0"}
-                (status :unsaved) {:pad "0 0 0 0"})
-        border (. BorderFactory createLoweredBevelBorder)]
-    (.setBorder panel border)
-    panel))
-
 (defn make-cluebox []
   (let [word (JTextField. 15)
         clue (JTextField. 40)
