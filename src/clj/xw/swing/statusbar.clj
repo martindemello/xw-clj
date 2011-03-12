@@ -3,7 +3,7 @@
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]))
   (:use (xw board cursor wordlist clues words))
-  (:use (xw.swing grid events)))
+  (:use (xw.swing events)))
 
 (def status)
 

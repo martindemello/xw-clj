@@ -3,8 +3,8 @@
   :source-path "src/clj"
   :java-source-path "src/java"
   :javac-fork "true"
-  :dependencies [[org.clojure/clojure "1.2.0-master-SNAPSHOT"]
-                 [org.clojure/clojure-contrib "1.2.0-SNAPSHOT"]
+  :dependencies [[org.clojure/clojure "1.2.0"]
+                 [org.clojure/clojure-contrib "1.2.0"]
                  [commons-io "1.2"]
                  [commons-cli "1.1"]
                  [com.h2database/h2 "1.2.137"]
@@ -14,7 +14,4 @@
   :dev-dependencies [[org.clojars.mmcgrana/lein-clojars "0.5.0"]
                      [lein-javac "1.2.0-SNAPSHOT"]]
 
-:main xw.main
-:namespaces [xw.main])
- 
-
+:main xw.main)

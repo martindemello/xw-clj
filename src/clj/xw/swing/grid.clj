@@ -11,7 +11,7 @@
      (java.awt.font TextLayout FontRenderContext))
   (:use
      (xw board cursor graphics)
-     (xw.swing events)))
+     (xw.swing events common)))
 
 (def scale)
 (def n)
@@ -19,10 +19,11 @@
 (def width)
 (def arrow)
 (def downarrow)
+(def grid)
 
 (def gridpanel-focused? true)
 
-(defn resize-grid [sc]
+(defn resize [sc]
   (def scale sc)
   (def n (* N scale))
   (def height (+ n 5))
@@ -40,11 +41,6 @@
 (def letter-font (new Font "Arial" (. Font PLAIN) 18))
 (def number-font (new Font "Serif" (. Font PLAIN) 9))
 (def text-color (. Color black))
-(def ared   (new Color 255 0 0 192))
-(def ablue  (new Color 0 0 255 192))
-(def agreen (new Color 0 128 0 64))
-(def pale-yellow (new Color 255 255 192 192))
-(def pale-blue (new Color 192 192 255 192))
 
 (defn board-action [c]
   (cond
@@ -153,8 +149,8 @@
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
 
-(defn make-grid [scale on-key] ; chainable keyboard handler
-  (resize-grid scale)
+(defn make [scale on-key] ; chainable keyboard handler
+  (resize scale)
   (let [gpanel (proxy [JPanel] [] (paint [g] (render g)))]
     (doto gpanel
       (.setFocusable true)
@@ -192,4 +188,9 @@
                 (move-to cx cy))
               (.repaint gpanel))))))
 
+    (def grid gpanel)
     gpanel))
+
+(defn repaint [] (.repaint grid))
+
+(defn request-focus [] (.requestFocus grid))

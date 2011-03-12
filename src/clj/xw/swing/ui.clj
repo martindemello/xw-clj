@@ -14,9 +14,11 @@
           [swing-utils :only (add-action-listener make-menubar make-action)]
           [pprint :only (pprint)]
           ))
+  (:require [xw.swing.grid :as grid])
   (:require [xw.swing.statusbar :as statusbar])
   (:require [xw.swing.file :as file])
   (:require [xw.swing.cluebox :as cluebox])
+  (:require [xw.swing.wordlist :as wordlist])
   (:use (xw board cursor wordlist clues words))
   (:use (xw.swing grid events widgets)))
 
@@ -35,7 +37,6 @@
 
 ; forward declarations
 (def ui)
-(def grid)
 (def mf)
 (def mainpanel)
 (def gridpanel)
@@ -46,10 +47,6 @@
 (def extended-grid-keyhandler)
 
 
-; list of possible words
-(def words (JList.))
-(def wordlist-pattern "")
-
 (defn make-widgets [scale]
   ; TODO: Fix padding!
 
@@ -57,7 +54,7 @@
     (miglayout
       (JPanel.)
       (JPanel.) {:id :gridpanel} :growy :newline
-      (JScrollPane. words) {:id :wlist :width 200 :height 450}
+      (JScrollPane. wordlist/words) {:id :wlist :width 200 :height 450}
       (cluebox/make) :newline :span :growx))
 
   (let [column-names ["" "Word" "Clue"]
@@ -107,24 +104,7 @@
     (.add lock-button)
     (.add save-button))
 
-  (def grid (make-grid scale extended-grid-keyhandler))
-
-  ; the wordlist should fill the current word in when selected
-  (add-key-pressed-listener
-    words
-    (fn [e]
-      (when (= (char-of e) "Enter")
-        (when (= (current-word) wordlist-pattern)
-          (let [w (first (.getSelectedValues words))]
-            (set-current-word w)
-            (update-wordlist)
-            (.repaint words)
-            (.repaint grid)
-            (.requestFocus grid))))))
-
-  ; and force an update when focused, to prevent filling in inconsistent values
-  ; into the grid
-  (add-focus-listener words (fn [_] (update-wordlist))))
+  (grid/make scale extended-grid-keyhandler))
 
 (defn toggle-gridlock []
   (set-state :gridlock (not (state :gridlock)))
@@ -133,7 +113,7 @@
 ; keyboard handler chained from grid keyboard handler
 (defn on-ctrl-key [c]
   (cond
-    (= c "R") (update-wordlist)
+    (= c "R") (wordlist/update)
     (= c "L") (toggle-gridlock)))
 
 (defn extended-grid-keyhandler [e]
@@ -143,14 +123,6 @@
     (statusbar/update)
     (cluebox/update (current-word))))
 
-; update widgets
-(defn update-wordlist []
-  (let [cw (current-word)]
-  (when (not (= cw wordlist-pattern))
-    (def wordlist-pattern cw)
-    (let [w (take 26 (words-with cw))]
-      (. words setListData (to-array w))))))
-
 (defn update-cluelist []
   (def cluelist (active-cluelist))
   (.fireTableStructureChanged cluemodel))
@@ -158,11 +130,11 @@
 (defn exit [] (. System exit 0))
 
 (defn reinit-ui []
-  (resize-grid scale)
+  (grid/resize scale)
   (goto-origin)
   (statusbar/init)
   (statusbar/update)
-  (.repaint grid))
+  (grid/repaint))
 
 (defn save-file-handler [_]
   (file/save-file-dialog mf))
@@ -226,11 +198,11 @@
   (init-menu mf)
 
   (doto wlist
-    (.add words))
+    (.add wordlist/words))
 
   (doto gridpanel
     (.setLayout (new BorderLayout))
-    (.add grid (. BorderLayout CENTER)))
+    (.add grid/grid (. BorderLayout CENTER)))
 
   (doto mf
     (.addWindowListener
@@ -238,9 +210,8 @@
     (.pack)
     (.show))
 
-  (doto grid
-    (.repaint)
-    (.requestFocus))
+  (grid/repaint)
+  (grid/request-focus)
 
   (UIManager/setLookAndFeel "com.seaglasslookandfeel.SeaGlassLookAndFeel")
   )

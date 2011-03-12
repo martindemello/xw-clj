@@ -7,7 +7,7 @@
           [swing-utils :only (add-action-listener)]
           ))
   (:use (xw clues))
-  (:use (xw.swing grid events)))
+  (:use (xw.swing events common)))
 
 (require '[clojure.contrib.str-utils2 :as s])
 
