@@ -19,6 +19,7 @@
   (:require [xw.swing.file :as file])
   (:require [xw.swing.cluebox :as cluebox])
   (:require [xw.swing.wordlist :as wordlist])
+  (:require [xw.swing.toolbar :as toolbar])
   (:use (xw board cursor wordlist clues words))
   (:use (xw.swing grid events widgets)))
 
@@ -36,7 +37,6 @@
 ;; layout and widgets
 
 ; forward declarations
-(def ui)
 (def mf)
 (def mainpanel)
 (def gridpanel)
@@ -82,27 +82,22 @@
 
   (add-tab-change-listener tabs (fn [_] (update-cluelist)))
 
-  (def ui
-    (let [panel (miglayout
-                  (JPanel.)
-                  (JToolBar. "Toolbar") {:id :toolbar}
-                  tabs :newline :span :growx
-                  (statusbar/make) :newline :span :growx)
-          frame (JFrame. "Crossword Editor")
-          ]
-      { :frame frame :panel panel}))
+  (def mf (JFrame. "Crossword Editor"))
 
-  (def mf (ui :frame))
-  (def mainpanel (ui :panel))
+  (def buttons
+    [(doto (JButton. "Save") (on-action ev (file/save-file-dialog mf)))
+     (doto (JButton. "Lock") (on-action ev (toggle-gridlock)))
+     ])
+
+  (def mainpanel
+    (miglayout
+      (JPanel.)
+      (toolbar/make buttons)
+      tabs :newline :span :growx
+      (statusbar/make) :newline :span :growx))
+
   (def gridpanel ((components gridtab) :gridpanel))
   (def wlist ((components gridtab) :wlist))
-  (def toolbar ((components mainpanel) :toolbar))
-
-  (def save-button (doto (JButton. "Save") (on-action ev (file/save-file-dialog mf))))
-  (def lock-button (doto (JButton. "Lock") (on-action ev (toggle-gridlock))))
-  (doto toolbar
-    (.add lock-button)
-    (.add save-button))
 
   (grid/make scale extended-grid-keyhandler))
 
@@ -148,7 +143,7 @@
   (reinit-ui))
 
 (defn show-about [_]
-  (message-dialog "Hello World" "About Crossword Editor"))
+  (message-dialog mf "Hello World" "About Crossword Editor"))
 
 (defn init-menu [frame]
   (let [menubar-spec
