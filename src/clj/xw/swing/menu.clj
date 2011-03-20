@@ -1,10 +1,39 @@
 (ns xw.swing.menu
   (:import (java.awt.event KeyEvent))
-  (:use (clojure.contrib [swing-utils :only (make-menubar make-action)]))
-  (:use (xw.swing [ui :only (new-file-handler load-file-handler save-file-handler
-                                              exit show-about)])))
+  (:require [xw.swing.grid :as grid])
+  (:require [xw.swing.file :as file])
+  (:require [xw.swing.statusbar :as statusbar])
+  (:use (xw.swing widgets common))
+  (:use (xw board cursor))
+  (:use (clojure.contrib [swing-utils :only (make-menubar make-action)])))
 
-(defn init-menu [frame]
+(def mf)
+
+(defn reinit-ui []
+  (grid/resize grid/scale)
+  (goto-origin)
+  (statusbar/init)
+  (statusbar/update)
+  (grid/repaint))
+
+(defn save-file-handler [_]
+  (file/save-file-dialog mf))
+
+(defn load-file-handler [_]
+  (when (file/load-file-dialog mf)
+    (reinit-ui)))
+
+(defn new-file-handler [n]
+  (init-board n)
+  (reinit-ui))
+
+(defn show-about [_]
+  (message-dialog mf "Hello World" "About Crossword Editor"))
+
+(defn exit [_] (. System exit 0))
+
+(defn make [frame]
+  (def mf frame)
   (let [menubar-spec
         [{:name     "File"
           :mnemonic KeyEvent/VK_F
@@ -28,7 +57,7 @@
            {} ; <- adds a separator
            {:name     "Exit"
             :mnemonic KeyEvent/VK_X
-            :handler  (fn [_] (exit))}]}
+            :handler  exit}]}
          {:name     "Help"
           :mnemonic KeyEvent/VK_H
           :items    [{:name     "About"
@@ -39,4 +68,3 @@
       (.setJMenuBar menubar)
       (.pack)
       (.setVisible true))))
-
