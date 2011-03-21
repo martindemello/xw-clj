@@ -32,4 +32,3 @@
 (defn update []
   (.setText (status :gridlock) (if (state :gridlock) "LOCKED" "UNLOCKED"))
   (.setText (status :unsaved) (if (state :dirty) "*" " ")))
-

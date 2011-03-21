@@ -1,14 +1,9 @@
 (ns xw.swing.grid
   (:import
-     (javax.swing JPanel SwingUtilities BorderFactory)
-     (javax.swing.event DocumentListener)
-     (java.awt BasicStroke Color Dimension Graphics Polygon Font Graphics2D RenderingHints)
-     (java.awt.geom AffineTransform Ellipse2D FlatteningPathIterator GeneralPath
-                    Line2D PathIterator Point2D)
+     (javax.swing JPanel)
+     (java.awt Color Dimension Polygon Font)
      (java.awt.image BufferedImage)
-     (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
-                     InputEvent MouseAdapter FocusListener FocusAdapter)
-     (java.awt.font TextLayout FontRenderContext))
+     (java.awt.event FocusAdapter))
   (:use
      (xw board cursor graphics)
      (xw.swing events common)))

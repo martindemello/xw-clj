@@ -1,13 +1,8 @@
 (ns xw.swing.ui
   (:import
-     (javax.swing JButton JFrame JLabel JPanel JTextField JList JScrollPane
-                  JSeparator SwingUtilities JToolBar JTabbedPane UIManager
-                  JTextArea JTable)
-     (javax.swing.table AbstractTableModel)
-     (java.awt Color Font GridLayout BorderLayout FlowLayout)
-     (java.awt.event WindowAdapter WindowEvent KeyListener KeyAdapter KeyEvent
-                     InputEvent MouseAdapter)
-     (java.awt.font TextLayout FontRenderContext))
+     (javax.swing JButton JFrame JPanel JScrollPane JTabbedPane UIManager)
+     (java.awt Color BorderLayout)
+     (java.awt.event WindowAdapter))
 ;     (com.l2fprod.common.swing StatusBar))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
@@ -41,7 +36,6 @@
 (def mf)
 (def mainpanel)
 (def gridpanel)
-(def cluelist [])
 (def wlist)
 (def extended-grid-keyhandler)
 

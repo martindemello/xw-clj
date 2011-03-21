@@ -4,8 +4,7 @@
      (java.awt Color))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
-          [swing-utils :only (add-action-listener)]
-          ))
+          [swing-utils :only (add-action-listener)]))
   (:use (xw clues cursor wordlist))
   (:use (xw.swing events))
   (:require [xw.swing.grid :as grid]))
