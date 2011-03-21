@@ -6,5 +6,8 @@
 
 (defn make [buttons]
   (def toolbar (JToolBar. "Toolbar"))
-  (doseq [b buttons] (.add toolbar b))
+  (doseq [[title f] buttons]
+    (let [b (JButton. title)]
+      (on-action b ev (f))
+      (.add toolbar b)))
   toolbar)

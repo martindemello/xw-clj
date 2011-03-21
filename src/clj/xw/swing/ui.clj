@@ -1,6 +1,6 @@
 (ns xw.swing.ui
   (:import
-     (javax.swing JButton JFrame JPanel JScrollPane JTabbedPane UIManager)
+     (javax.swing JFrame JPanel JScrollPane JTabbedPane UIManager)
      (java.awt Color BorderLayout)
      (java.awt.event WindowAdapter))
 ;     (com.l2fprod.common.swing StatusBar))
@@ -39,7 +39,6 @@
 (def wlist)
 (def extended-grid-keyhandler)
 
-
 (defn make-widgets [scale]
   ; TODO: Fix padding!
 
@@ -50,7 +49,6 @@
       (JScrollPane. wordlist/words) {:id :wlist :width 200 :height 450}
       (cluebox/make) :newline :span :growx))
 
-
   (def cluetab
     (miglayout
       (JPanel.) {:id :cluepanel} :growy :newline
@@ -59,21 +57,19 @@
   (def tabs
     (doto (JTabbedPane.)
       (.addTab "Grid" gridtab)
-      (.addTab "Clues" cluetab)))
-
-  (add-tab-change-listener tabs (fn [_] (cluesheet/update-cluelist)))
+      (.addTab "Clues" cluetab)
+      (add-tab-change-listener (fn [_] (cluesheet/update-cluelist)))))
 
   (def mf (JFrame. "Crossword Editor"))
 
-  (def buttons
-    [(doto (JButton. "Save") (on-action ev (file/save-file-dialog mf)))
-     (doto (JButton. "Lock") (on-action ev (toggle-gridlock)))
-     ])
+  (def toolbar-buttons
+    [["Save" #(file/save-file-dialog mf)]
+     ["Lock" toggle-gridlock]])
 
   (def mainpanel
     (miglayout
       (JPanel.)
-      (toolbar/make buttons)
+      (toolbar/make toolbar-buttons)
       tabs :newline :span :growx
       (statusbar/make) :newline :span :growx))
 
