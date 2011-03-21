@@ -19,6 +19,7 @@
   (:require [xw.swing.file :as file])
   (:require [xw.swing.cluebox :as cluebox])
   (:require [xw.swing.wordlist :as wordlist])
+  (:require [xw.swing.cluesheet :as cluesheet])
   (:require [xw.swing.toolbar :as toolbar])
   (:require [xw.swing.menu :as menu])
   (:use (xw board cursor wordlist clues words))
@@ -29,7 +30,6 @@
 
 (declare update-wordlist)
 (declare toggle-gridlock)
-(declare update-cluelist)
 
 ;;; -----------------------------------------
 ;;; Graphics
@@ -41,8 +41,6 @@
 (def mf)
 (def mainpanel)
 (def gridpanel)
-(def cluesheet)
-(def cluetable)
 (def cluelist [])
 (def wlist)
 (def extended-grid-keyhandler)
@@ -58,30 +56,18 @@
       (JScrollPane. wordlist/words) {:id :wlist :width 200 :height 450}
       (cluebox/make) :newline :span :growx))
 
-  (let [column-names ["" "Word" "Clue"]
-          table-model (proxy [AbstractTableModel] []
-                        (getColumnCount [] (count column-names))
-                        (getRowCount [] (count cluelist))
-                        (isCellEditable [row col] false)
-                        (getColumnName [col] (nth column-names col))
-                        (getValueAt [row col] (get-in cluelist [row col])))
-        table (doto (JTable. table-model)
-                (.setGridColor java.awt.Color/DARK_GRAY))
-        ]
-    (def cluesheet table)
-    (def cluemodel table-model))
 
   (def cluetab
     (miglayout
       (JPanel.) {:id :cluepanel} :growy :newline
-      (JScrollPane. cluesheet)))
+      (JScrollPane. (cluesheet/make))))
 
   (def tabs
     (doto (JTabbedPane.)
       (.addTab "Grid" gridtab)
       (.addTab "Clues" cluetab)))
 
-  (add-tab-change-listener tabs (fn [_] (update-cluelist)))
+  (add-tab-change-listener tabs (fn [_] (cluesheet/update-cluelist)))
 
   (def mf (JFrame. "Crossword Editor"))
 
@@ -118,10 +104,6 @@
       (ctrl? e) (on-ctrl-key c))
     (statusbar/update)
     (cluebox/update (current-word))))
-
-(defn update-cluelist []
-  (def cluelist (active-cluelist))
-  (.fireTableStructureChanged cluemodel))
 
 (defn exit [] (. System exit 0))
 
