@@ -131,5 +131,4 @@
   (grid/repaint)
   (grid/request-focus)
 
-  (UIManager/setLookAndFeel "com.seaglasslookandfeel.SeaGlassLookAndFeel")
   )
