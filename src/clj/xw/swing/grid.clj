@@ -15,6 +15,7 @@
 (def arrow)
 (def downarrow)
 (def grid)
+(def grid-changed)
 
 (def gridpanel-focused? true)
 
@@ -156,11 +157,13 @@
     (= c "Up")    (move-up)
     (= c "Right") (move-right)
     (= c "Left")  (move-left)
-    (= c "Enter") (flip-dir)))
+    (= c "Enter") (flip-dir))
+  (grid-changed))
 
 (defn ctrl-board-action [c]
   (cond
-    (= c "Delete") (delete-current-word)))
+    (= c "Delete") (delete-current-word))
+  (grid-changed))
 
 (defn handle-key-event [e]
   (let [c (char-of e)]
@@ -176,7 +179,8 @@
         cy (int (/ y scale))]
     (if (and (= cx current-x) (= cy current-y))
       (flip-dir)
-      (move-to cx cy))))
+      (move-to cx cy)))
+  (grid-changed))
 
 ;;; --------------------------------------------------
 ;;; constructor
@@ -215,6 +219,7 @@
           (.repaint gpanel))))
 
     (def grid gpanel)
+    (def grid-changed grid-change)
     gpanel))
 
 (defn repaint [] (.repaint grid))

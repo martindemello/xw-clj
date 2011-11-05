@@ -38,7 +38,7 @@
 (def gridpanel)
 (def wlist)
 (def extended-grid-keyhandler)
-(def grid-changed)
+(def on-grid-change)
 
 (defn make-widgets [scale]
   ; TODO: Fix padding!
@@ -77,13 +77,15 @@
   (def gridpanel ((components gridtab) :gridpanel))
   (def wlist ((components gridtab) :wlist))
 
-  (grid/make scale extended-grid-keyhandler grid-changed))
+  (grid/make scale extended-grid-keyhandler on-grid-change))
 
 (defn toggle-gridlock []
   (set-state :gridlock (not (state :gridlock)))
   (statusbar/update))
 
-; keyboard handler chained from grid keyboard handler
+;; keyboard handler chained from grid keyboard handler
+;; to handle app-level keystrokes (mostly ctrl-<key> shortcuts)
+
 (defn on-ctrl-key [c]
   (cond
     (= c "R") (wordlist/update)
@@ -92,11 +94,9 @@
 (defn extended-grid-keyhandler [e]
   (let [c (char-of e)]
     (cond
-      (ctrl? e) (on-ctrl-key c))
-    (statusbar/update)
-    (cluebox/update (current-word))))
+      (ctrl? e) (on-ctrl-key c))))
 
-(defn grid-changed []
+(defn on-grid-change []
   (statusbar/update)
   (cluebox/update (current-word)))
 
