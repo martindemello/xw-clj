@@ -5,7 +5,7 @@
      (java.awt Color))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
-          [swing-utils :only (add-action-listener)]))
+          [swing-utils :only (add-action-listener do-swing)]))
   (:use (xw clues cursor wordlist))
   (:use (xw.swing events common))
   (:require [xw.swing.grid :as grid]))
@@ -44,9 +44,11 @@
       (.addFocusListener
         (proxy [FocusAdapter] []
           (focusGained [e]
-                       (update)
+                       (do-swing (update))
+                       (.setBorder words red-border)
                        (def wlist-focused? true))
           (focusLost [e]
+                     (.setBorder words black-border)
                      (def wlist-focused? false)))))
     (def wordbox wpanel)
     wpanel))
