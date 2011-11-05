@@ -46,7 +46,7 @@
     (miglayout
       (JPanel.)
       (JPanel.) {:id :gridpanel} :growy :newline
-      (wordlist/make) {:width 200 :height 450}
+      (wordlist/make) {:width 200 :height 455}
       (cluebox/make) :newline :span :growx))
 
   (def cluetab
