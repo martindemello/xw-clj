@@ -213,9 +213,9 @@
 
       (add-mouse-click-listener
         (fn [e]
-          (if (not gridpanel-focused?)
-            (. gpanel requestFocus)
-            (handle-mouse-event e))
+          (if gridpanel-focused?
+            (handle-mouse-event e)
+            (. gpanel requestFocus))
           (.repaint gpanel))))
 
     (def grid gpanel)

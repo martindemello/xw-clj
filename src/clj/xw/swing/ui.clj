@@ -36,7 +36,6 @@
 (def mf)
 (def mainpanel)
 (def gridpanel)
-(def wlist)
 (def extended-grid-keyhandler)
 (def on-grid-change)
 
@@ -47,7 +46,7 @@
     (miglayout
       (JPanel.)
       (JPanel.) {:id :gridpanel} :growy :newline
-      (JScrollPane. wordlist/words) {:id :wlist :width 200 :height 450}
+      (wordlist/make) {:width 200 :height 450}
       (cluebox/make) :newline :span :growx))
 
   (def cluetab
@@ -75,7 +74,6 @@
       (statusbar/make) :newline :span :growx))
 
   (def gridpanel ((components gridtab) :gridpanel))
-  (def wlist ((components gridtab) :wlist))
 
   (grid/make scale extended-grid-keyhandler on-grid-change))
 
@@ -120,7 +118,7 @@
 
   (menu/make mf)
 
-  (doto wlist
+  (doto wordlist/wordbox
     (.add wordlist/words))
 
   (doto gridpanel
