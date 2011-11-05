@@ -3,7 +3,7 @@
   :source-path "src/clj"
   :java-source-path "src/java"
   :javac-fork "true"
-  :dependencies [[org.clojure/clojure "1.2.0"]
+  :dependencies [[org.clojure/clojure "1.2.1"]
                  [org.clojure/clojure-contrib "1.2.0"]
                  [commons-io "1.2"]
                  [commons-cli "1.1"]
