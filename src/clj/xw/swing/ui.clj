@@ -38,6 +38,7 @@
 (def gridpanel)
 (def wlist)
 (def extended-grid-keyhandler)
+(def grid-changed)
 
 (defn make-widgets [scale]
   ; TODO: Fix padding!
@@ -76,7 +77,7 @@
   (def gridpanel ((components gridtab) :gridpanel))
   (def wlist ((components gridtab) :wlist))
 
-  (grid/make scale extended-grid-keyhandler))
+  (grid/make scale extended-grid-keyhandler grid-changed))
 
 (defn toggle-gridlock []
   (set-state :gridlock (not (state :gridlock)))
@@ -94,6 +95,10 @@
       (ctrl? e) (on-ctrl-key c))
     (statusbar/update)
     (cluebox/update (current-word))))
+
+(defn grid-changed []
+  (statusbar/update)
+  (cluebox/update (current-word)))
 
 (defn exit [] (. System exit 0))
 

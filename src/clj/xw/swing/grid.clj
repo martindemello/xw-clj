@@ -18,6 +18,12 @@
 
 (def gridpanel-focused? true)
 
+;;; --------------------------------------------------
+;;; board drawing
+;;; --------------------------------------------------
+
+;; geometry and styling
+
 (defn resize [sc]
   (def scale sc)
   (def n (* N scale))
@@ -37,22 +43,6 @@
 (def number-font (new Font "Serif" (. Font PLAIN) 9))
 (def text-color (. Color black))
 
-(defn board-action [c]
-  (cond
-    (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-forward))
-    (= c "Space") (do (place-symm :black) (move-forward))
-    (= c "Backspace") (do (move-back) (place-letter :empty))
-    (= c "Delete") (place-letter :empty)
-    (= c "Down")  (move-down)
-    (= c "Up")    (move-up)
-    (= c "Right") (move-right)
-    (= c "Left")  (move-left)
-    (= c "Enter") (flip-dir)))
-
-(defn ctrl-board-action [c]
-  (cond
-    (= c "Delete") (delete-current-word)))
-
 (defn topleft [x y]
   [(* x scale) (* y scale)])
 
@@ -66,6 +56,8 @@
   `(let [[~i ~j] (topleft ~x ~y)]
      (doto ~bg
        ~@body)))
+
+;; drawing and text
 
 (defn draw-letter [bg x y l]
   (in-square [i j] bg x y
@@ -89,6 +81,8 @@
              (.setColor color)
              (.drawRect (+ i 1) (+ j 1) (- scale 2) (- scale 2))))
 
+;; cursor drawing
+
 (defn add-poly [bg poly col]
   (let [po (new Polygon)]
     (doseq [[i j] poly] (. po addPoint i j))
@@ -105,6 +99,8 @@
   (let [[i j] (topleft-inner x y)]
     ((if (across?) arrow-ac arrow-dn) bg i j)))
 
+;; cell rendering
+
 (defn black-square [bg x y]
   (fill-square bg x y (. Color black)))
 
@@ -119,6 +115,8 @@
   (if (black? x y)
     (black-square bg x y)
     (white-square bg x y)))
+
+;; board rendering
 
 (defn render [g]
   (let [img (new BufferedImage width height (. BufferedImage TYPE_INT_ARGB))
@@ -144,7 +142,49 @@
     (. g (drawImage img 0 0 nil))
     (. bg (dispose))))
 
-(defn make [scale on-key] ; chainable keyboard handler
+;;; --------------------------------------------------
+;;; event handling
+;;; --------------------------------------------------
+
+(defn board-action [c]
+  (cond
+    (re-matches #"^[A-Za-z]$" c) (do (place-letter c) (move-forward))
+    (= c "Space") (do (place-symm :black) (move-forward))
+    (= c "Backspace") (do (move-back) (place-letter :empty))
+    (= c "Delete") (place-letter :empty)
+    (= c "Down")  (move-down)
+    (= c "Up")    (move-up)
+    (= c "Right") (move-right)
+    (= c "Left")  (move-left)
+    (= c "Enter") (flip-dir)))
+
+(defn ctrl-board-action [c]
+  (cond
+    (= c "Delete") (delete-current-word)))
+
+(defn handle-key-event [e]
+  (let [c (char-of e)]
+    (cond
+      (ctrl? e) (ctrl-board-action c)
+      (alt? e)  nil ; defer to menubar
+      true      (board-action c))))
+
+(defn handle-mouse-event [e]
+  (let [x (.getX e)
+        y (.getY e)
+        cx (int (/ x scale))
+        cy (int (/ y scale))]
+    (if (and (= cx current-x) (= cy current-y))
+      (flip-dir)
+      (move-to cx cy))))
+
+;;; --------------------------------------------------
+;;; constructor
+;;; --------------------------------------------------
+
+(defn make [scale on-key grid-change]
+  ; on-key: chainable keyboard handler
+  ; grid-change: callback so ui can deal with grid changes
   (resize scale)
   (let [gpanel (proxy [JPanel] [] (paint [g] (render g)))]
     (doto gpanel
@@ -161,27 +201,18 @@
                      (def gridpanel-focused? false)
                      (.repaint gpanel))))
 
-      (add-key-pressed-listener 
+      (add-key-pressed-listener
         (fn [e]
-          (let [c (char-of e)]
-            (cond
-              (ctrl? e) (ctrl-board-action c)
-              (alt? e)  nil ; defer to menubar
-              true      (board-action c))
-            (.repaint gpanel)
-            (on-key e))))
+          (handle-key-event e)
+          (.repaint gpanel)
+          (on-key e)))
 
       (add-mouse-click-listener
         (fn [e]
-          (if (not gridpanel-focused?) (. gpanel requestFocus)
-            (let [x (.getX e)
-                  y (.getY e)
-                  cx (int (/ x scale))
-                  cy (int (/ y scale))]
-              (if (and (= cx current-x) (= cy current-y))
-                (flip-dir)
-                (move-to cx cy))
-              (.repaint gpanel))))))
+          (if (not gridpanel-focused?)
+            (. gpanel requestFocus)
+            (handle-mouse-event e))
+          (.repaint gpanel))))
 
     (def grid gpanel)
     gpanel))
