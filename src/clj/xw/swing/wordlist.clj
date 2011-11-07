@@ -39,6 +39,7 @@
 (defn make []
   (let [wpanel (JScrollPane. words)]
     (doto words
+      (.setFocusable true)
       ; force an update when focused, to prevent filling in
       ; inconsistent values into the grid
       (.addFocusListener

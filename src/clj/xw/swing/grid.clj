@@ -200,9 +200,11 @@
         (proxy [FocusAdapter] []
           (focusGained [e]
                        (def gridpanel-focused? true)
+                       (.setBorder gpanel red-border)
                        (.repaint gpanel))
           (focusLost [e]
                      (def gridpanel-focused? false)
+                     (.setBorder gpanel black-border)
                      (.repaint gpanel))))
 
       (add-key-pressed-listener

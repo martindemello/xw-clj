@@ -1,6 +1,7 @@
 (ns xw.swing.cluebox
   (:import 
      (javax.swing JPanel JTextField)
+     (java.awt.event FocusAdapter)
      (java.awt Color))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
@@ -20,6 +21,8 @@
   (def clueword (JTextField. 15))
   (.setEditable clueword false)
   (.setEditable clue false)
+  (.setFocusable clueword false)
+  (.setFocusable clue false)
 
   ; the cluebox should track whether the current clue has been saved
   ; set bgcolor to pale yellow for saved and white for dirty
@@ -33,6 +36,13 @@
     (.getDocument clue)
     (fn [e] (.setBackground clue (. Color white))))
   
+  (.addFocusListener clue
+    (proxy [FocusAdapter] []
+      (focusGained [e]
+                   (.setBorder clue red-border))
+      (focusLost [e]
+                 (.setBorder clue black-border))))
+
   (def cluebox 
     (miglayout (JPanel.)
                clueword {:id :word}
@@ -45,8 +55,10 @@
     (do
       (.setText clueword "")
       (.setText clue "")
+      (.setFocusable clue false)
       (.setEditable clue false))
     (do
       (.setText clueword word)
       (.setText clue (clue-for word))
+      (.setFocusable clue true)
       (.setEditable clue true))))
