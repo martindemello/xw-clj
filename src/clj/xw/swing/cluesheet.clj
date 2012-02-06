@@ -6,10 +6,12 @@
   (:use (xw clues words))
 (:use (xw.swing events common)))
 
+(require '[xw.swing.cluebox :as cluebox])
 
 (def model)
 (def view)
 (def cluelist [])
+(def update-cluelist)
 
 (defn make []
   (let [column-names ["Sq" "Word" "Clue"]
@@ -17,9 +19,14 @@
         table-model (proxy [AbstractTableModel] []
                       (getColumnCount [] (count column-names))
                       (getRowCount [] (count cluelist))
-                      (isCellEditable [row col] false)
+                      (isCellEditable [row col] (= col 2))
                       (getColumnName [col] (nth column-names col))
-                      (getValueAt [row col] (get-in cluelist [row col])))
+                      (getValueAt [row col] (get-in cluelist [row col]))
+                      (setValueAt [s row col]
+                                  (let [word (get-in cluelist [row 1])]
+                                    (add-clue word s)
+                                    (update-cluelist)
+                                    (cluebox/update word))))
         table (JTable. table-model)
         ]
 
