@@ -51,8 +51,8 @@
 
   (def cluetab
     (miglayout
-      (JPanel.) {:id :cluepanel} :growy :newline
-      (JScrollPane. (cluesheet/make))))
+      (JPanel.) {:id :cluepanel} :fill
+      (JScrollPane. (cluesheet/make)) :grow))
 
   (def tabs
     (doto (JTabbedPane.)
