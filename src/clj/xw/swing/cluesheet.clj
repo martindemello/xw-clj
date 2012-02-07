@@ -25,7 +25,8 @@
                       (setValueAt [s row col]
                                   (let [word (get-in cluelist [row 1])]
                                     (add-clue word s)
-                                    (update-cluelist)
+                                    (def cluelist (assoc-in cluelist [row 2] s))
+                                    (. this fireTableCellUpdated row col)
                                     (cluebox/update word))))
         table (JTable. table-model)
         ]
