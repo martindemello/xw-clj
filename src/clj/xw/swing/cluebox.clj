@@ -40,7 +40,7 @@
 
   (add-indifferent-document-listener
     (.getDocument clue)
-    (fn [e] (.setBackground clue (. Color white))))
+    (fn [e] (.setBackground clue white)))
 
   ; for some reason, we need to keep setting the margin when focus is lost and
   ; gained, otherwise it resets to 0 when the main window loses focus

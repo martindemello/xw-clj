@@ -9,6 +9,8 @@
 (def pale-yellow (new Color 255 255 192 192))
 (def pale-blue (new Color 192 192 255 192))
 (def pale-red (new Color 255 192 192 192))
+(def white Color/WHITE)
+(def black Color/BLACK)
 
 (def red-border
   (. BorderFactory createLineBorder Color/RED))

@@ -42,7 +42,7 @@
 
 (def letter-font (new Font "Arial" (. Font PLAIN) 18))
 (def number-font (new Font "Serif" (. Font PLAIN) 9))
-(def text-color (. Color black))
+(def text-color black)
 
 (defn topleft [x y]
   [(* x scale) (* y scale)])
@@ -103,10 +103,10 @@
 ;; cell rendering
 
 (defn black-square [bg x y]
-  (fill-square bg x y (. Color black)))
+  (fill-square bg x y black))
 
 (defn white-square [bg x y]
-  (fill-square bg x y (. Color white))
+  (fill-square bg x y white)
   (when-not (blank? x y)
     (draw-letter bg x y (letter x y)))
   (when (numbered? x y)
@@ -193,7 +193,7 @@
   (let [gpanel (proxy [JPanel] [] (paint [g] (render g)))]
     (doto gpanel
       (.setFocusable true)
-      (.setBackground (. Color white))
+      (.setBackground white)
       (.setPreferredSize (new Dimension width height))
 
       (.addFocusListener

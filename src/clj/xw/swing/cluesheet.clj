@@ -33,7 +33,6 @@
     (doto table
       (.setGridColor java.awt.Color/DARK_GRAY)
       (.setRowHeight 24)
-      (.setAutoCreateColumnsFromModel false)
       (.setFillsViewportHeight true)
       (.setAutoResizeMode JTable/AUTO_RESIZE_LAST_COLUMN))
 
@@ -51,5 +50,5 @@
 
 (defn update-cluelist []
   (def cluelist (active-cluelist))
-  (.fireTableStructureChanged model))
+  (.fireTableDataChanged model))
 
