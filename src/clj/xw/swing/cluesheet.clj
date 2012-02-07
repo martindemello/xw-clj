@@ -34,6 +34,7 @@
       (.setGridColor java.awt.Color/DARK_GRAY)
       (.setRowHeight 24)
       (.setAutoCreateColumnsFromModel false)
+      (.setFillsViewportHeight true)
       (.setAutoResizeMode JTable/AUTO_RESIZE_LAST_COLUMN))
 
     (doto (. table getTableHeader)

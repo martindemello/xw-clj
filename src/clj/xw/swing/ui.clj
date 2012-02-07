@@ -50,9 +50,9 @@
       (cluebox/make) :newline :span :growx))
 
   (def cluetab
-    (miglayout
-      (JPanel.) {:id :cluepanel} :fill
-      (JScrollPane. (cluesheet/make)) :grow))
+    (doto (JPanel.)
+      (.setLayout (new BorderLayout))
+      (.add (JScrollPane. (cluesheet/make)) (. BorderLayout CENTER))))
 
   (def tabs
     (doto (JTabbedPane.)
