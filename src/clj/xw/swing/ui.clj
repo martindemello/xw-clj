@@ -118,9 +118,6 @@
 
   (menu/make mf)
 
-  (doto wordlist/wordbox
-    (.add wordlist/words))
-
   (doto gridpanel
     (.setLayout (new BorderLayout))
     (.add grid/grid (. BorderLayout CENTER)))

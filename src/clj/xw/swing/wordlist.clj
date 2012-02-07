@@ -1,8 +1,8 @@
 (ns xw.swing.wordlist
   (:import
-     (javax.swing JList JScrollPane BorderFactory)
+     (javax.swing JList JScrollPane JPanel BorderFactory)
      (java.awt.event FocusAdapter)
-     (java.awt Color))
+     (java.awt Color BorderLayout))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
           [swing-utils :only (add-action-listener do-swing)]))
@@ -20,7 +20,7 @@
   (let [cw (current-word)]
   (when (not (= cw pattern))
     (def pattern cw)
-    (let [w (take 26 (words-with cw))]
+    (let [w (words-with cw)]
       (. words setListData (to-array w))))))
 
 ; the wordlist should fill the current word in when selected
@@ -37,7 +37,13 @@
           (grid/request-focus))))))
 
 (defn make []
-  (let [wpanel (JScrollPane. words)]
+  (let [wpanel (JPanel.)
+        wpane  (JScrollPane. words)]
+
+    (doto wpanel
+      (.setLayout (new BorderLayout))
+      (.add wpane (. BorderLayout CENTER)))
+
     (doto words
       (.setFocusable true)
       ; force an update when focused, to prevent filling in
