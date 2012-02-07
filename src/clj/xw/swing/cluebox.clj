@@ -1,8 +1,8 @@
 (ns xw.swing.cluebox
-  (:import 
+  (:import
      (javax.swing JPanel JTextField)
      (java.awt.event FocusAdapter)
-     (java.awt Color))
+     (java.awt Color Insets))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
           [swing-utils :only (add-action-listener)]
@@ -17,12 +17,18 @@
 (declare clueword)
 
 (defn make []
-  (def clue (JTextField. 40))
+  (def clue (JTextField. 41))
   (def clueword (JTextField. 15))
-  (.setEditable clueword false)
-  (.setEditable clue false)
-  (.setFocusable clueword false)
-  (.setFocusable clue false)
+
+  (doto clue
+    (.setEditable false)
+    (.setFocusable false)
+    (.setMargin (Insets. 4 4 4 4)))
+
+  (doto clueword
+    (.setEditable false)
+    (.setFocusable false)
+    (.setMargin (Insets. 4 4 4 4)))
 
   ; the cluebox should track whether the current clue has been saved
   ; set bgcolor to pale yellow for saved and white for dirty
@@ -35,30 +41,46 @@
   (add-indifferent-document-listener
     (.getDocument clue)
     (fn [e] (.setBackground clue (. Color white))))
-  
+
+  ; for some reason, we need to keep setting the margin when focus is lost and
+  ; gained, otherwise it resets to 0 when the main window loses focus
   (.addFocusListener clue
     (proxy [FocusAdapter] []
       (focusGained [e]
+                   (.setMargin (Insets. 4 4 4 4))
                    (.setBorder clue red-border))
       (focusLost [e]
+                 (.setMargin (Insets. 4 4 4 4))
                  (.setBorder clue black-border))))
 
-  (def cluebox 
+  (def cluebox
     (miglayout (JPanel.)
                clueword {:id :word}
                clue {:id :clue} :growx))
 
   cluebox)
 
+(defn deactivate []
+  (doto clue
+    (.setText "")
+    (.setFocusable false)
+    (.setEditable false))
+  (doto clueword
+    (.setBackground nil)
+    (.setText "")))
+
+(defn activate [word]
+  (doto clue
+    (.setText (clue-for word))
+    (.setFocusable true)
+    (.setEditable true))
+  (doto clueword
+    (.setBackground pale-yellow)
+    (.setText word)))
+
 (defn update [word]
-  (if (and word (s/contains? word "."))
-    (do
-      (.setText clueword "")
-      (.setText clue "")
-      (.setFocusable clue false)
-      (.setEditable clue false))
-    (do
-      (.setText clueword word)
-      (.setText clue (clue-for word))
-      (.setFocusable clue true)
-      (.setEditable clue true))))
+  (if (or
+        (= word "")
+        (s/contains? word "."))
+    (deactivate)
+    (activate word)))
