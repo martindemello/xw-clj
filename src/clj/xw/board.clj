@@ -3,15 +3,15 @@
           [duck-streams :only (slurp*)])))
 
 (def N)
-(def board)
+(def board (atom {}))
 (def board-iter)
 (declare init-board)
 
 (def state {:gridlock nil, :dirty nil})
 
 ; accessors
-(defn letter [i j] ((board [i j]) 0))
-(defn number [i j] ((board [i j]) 1))
+(defn letter [i j] ((@board [i j]) 0))
+(defn number [i j] ((@board [i j]) 1))
 (defn black? [i j] (= (letter i j) :black))
 (defn white? [i j] (not (black? i j)))
 (defn blank? [i j] (= (letter i j) :empty))
@@ -19,7 +19,7 @@
 (defn set-state [k v] (def state (assoc state k v)))
 (defn set-board [i j p]
   (when (not (and (state :gridlock) (or (= (p 0) :black) (black? i j))))
-    (def board (assoc board [i j] p))
+    (swap! board assoc [i j] p)
     (set-state :dirty true)))
 (defn set-letter [i j l] (set-board i j [l (number i j)]))
 (defn set-number [i j n] (set-board i j [(letter i j) n]))
@@ -85,11 +85,11 @@
         true)
       false)))
 
-(defn new-board [n]
+(defn new-board [_ n]
   (reduce #(assoc %1 %2 [:empty nil]) {} (for [j (range n) i (range n)] [i j])))
 
 (defn init-board [n]
-  (def board (new-board n))
+  (swap! board new-board n)
   (def N n)
   (def board-iter (for [j (range N) i (range N)] [i j]))
   (def state {:gridlock nil, :dirty nil})
