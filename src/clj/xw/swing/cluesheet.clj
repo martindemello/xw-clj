@@ -10,7 +10,7 @@
 
 (def model)
 (def view)
-(def cluelist [])
+(def cluelist (atom []))
 (def update-cluelist)
 
 (defn make []
@@ -18,14 +18,14 @@
         column-widths [48 200 600]
         table-model (proxy [AbstractTableModel] []
                       (getColumnCount [] (count column-names))
-                      (getRowCount [] (count cluelist))
+                      (getRowCount [] (count @cluelist))
                       (isCellEditable [row col] (= col 2))
                       (getColumnName [col] (nth column-names col))
-                      (getValueAt [row col] (get-in cluelist [row col]))
+                      (getValueAt [row col] (get-in @cluelist [row col]))
                       (setValueAt [s row col]
-                                  (let [word (get-in cluelist [row 1])]
+                                  (let [word (get-in @cluelist [row 1])]
                                     (add-clue word s)
-                                    (def cluelist (assoc-in cluelist [row 2] s))
+                                    (swap! cluelist assoc-in [row 2] s)
                                     (. this fireTableCellUpdated row col)
                                     (cluebox/update word))))
         table (JTable. table-model)
@@ -49,7 +49,10 @@
     (def model table-model))
   view)
 
+(defn- get-active-cluelist [_]
+  (active-cluelist))
+
 (defn update-cluelist []
-  (def cluelist (active-cluelist))
+  (swap! cluelist get-active-cluelist)
   (.fireTableDataChanged model))
 
