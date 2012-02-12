@@ -7,7 +7,7 @@
 (def board-iter)
 (declare init-board)
 
-(def state {:gridlock nil, :dirty nil})
+(def state (atom {:gridlock nil, :dirty nil}))
 
 ; accessors
 (defn letter [i j] ((@board [i j]) 0))
@@ -16,9 +16,9 @@
 (defn white? [i j] (not (black? i j)))
 (defn blank? [i j] (= (letter i j) :empty))
 (defn numbered? [i j] (not (= (number i j) nil)))
-(defn set-state [k v] (def state (assoc state k v)))
+(defn set-state [k v] (swap! state assoc k v))
 (defn set-board [i j p]
-  (when (not (and (state :gridlock) (or (= (p 0) :black) (black? i j))))
+  (when (not (and (@state :gridlock) (or (= (p 0) :black) (black? i j))))
     (swap! board assoc [i j] p)
     (set-state :dirty true)))
 (defn set-letter [i j l] (set-board i j [l (number i j)]))
@@ -88,11 +88,14 @@
 (defn new-board [_ n]
   (reduce #(assoc %1 %2 [:empty nil]) {} (for [j (range n) i (range n)] [i j])))
 
+(defn new-state [_]
+  {:gridlock nil, :dirty nil})
+
 (defn init-board [n]
   (swap! board new-board n)
   (def N n)
   (def board-iter (for [j (range N) i (range N)] [i j]))
-  (def state {:gridlock nil, :dirty nil})
+  (swap! state new-state)
   (renumber))
 
 (defn save-to-file [f]

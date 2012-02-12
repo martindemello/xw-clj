@@ -6,7 +6,6 @@
 ;     (com.l2fprod.common.swing StatusBar))
   (:use (clojure.contrib
           [miglayout :only (miglayout components)]
-          [swing-utils :only (add-action-listener make-menubar make-action)]
           [pprint :only (pprint)]
           ))
   (:require [xw.swing.grid :as grid])
