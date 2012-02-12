@@ -3,8 +3,9 @@
   :source-path "src/clj"
   :java-source-path "src/java"
   :javac-fork "true"
-  :dependencies [[org.clojure/clojure "1.2.1"]
-                 [org.clojure/clojure-contrib "1.2.0"]
+  :dependencies [[org.clojure/clojure "1.3.0"]
+                 ; https://github.com/arohner/clojure-contrib/tree/1.3-compat
+                 [org.clojure/clojure-contrib "1.3-compat"]
                  [commons-io "1.2"]
                  [commons-cli "1.1"]
                  [com.h2database/h2 "1.2.137"]
