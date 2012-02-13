@@ -1,6 +1,8 @@
 (ns xw.board
   (:use (clojure.contrib
-          [duck-streams :only (slurp*)])))
+          [duck-streams :only (slurp*)]))
+  (:use xw.common))
+
 
 (def N)
 (def board (atom {}))
@@ -59,14 +61,6 @@
     (= s ".") :empty
     (= s "#") :black
     true s))
-
-(defn explode [s] (map str (seq s)))
-
-(defn join
-  ([xs]     (apply str xs))
-  ([sep xs] (join (interpose sep xs))))
-
-(defn join-lines [s] (map str (filter #(not (= % \newline)) s)))
 
 (defn board-to-str []
   (let [rows (map join (partition N (map cell-to-str board-iter)))]
